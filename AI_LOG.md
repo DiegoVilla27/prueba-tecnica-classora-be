@@ -208,3 +208,31 @@ Registro del uso de inteligencia artificial en el backend. Complementa la **Part
   Después hizo push a `origin/main` y propuso el hito 3 (feature `product`).
 - **Decisiones / correcciones humanas:** Ninguna.
 - **Resultado:** Hito 2 publicado en `origin/main`.
+
+### #15 · 2026-10-28 20:24 · Hito 3: feature product (`GET /products/{code}`)
+- **Herramienta:** Claude Code (Claude Opus 5.5)
+- **Prompt (resumen):** Empezar el hito 3.
+- **Qué hizo la IA:**
+  - Feature `product` hexagonal:
+    - `ProductModel` solo con `reconstruct`, porque el catálogo es de solo lectura;
+    - `ProductNotFoundException` (404 "Product not found.");
+    - `ProductRepositoryPort.getByCode` (lo reutilizará `sale`) y `ProductService.getByCode`;
+    - entity, `ProductJpaRepository.findByCode`, mappers y adapter;
+    - `ProductResponseDTO(id, code, name, price)`.
+  - `GET /products/{code}` con `@Pattern("^\\d{4,14}$")` en el path (400 con el detalle del campo, sin tocar la BD) y `@GetProductByCodeDocumentation`.
+  - `V2__seed_products.sql`: 12 productos con UUID fijos (para que los fixtures MSW del front coincidan), incluido un código corto de 4 dígitos y la bolsa de 0,10 € para probar la precisión.
+  - Tests: `ProductModelTest`, `ProductServiceTest`, `ProductControllerTest`, `ProductRepositoryAdapterTest` y `ProductLookupIT` (200 con el JSON exacto, escala 2 del precio, 404, 400 y 401).
+  - Docs: hito 3 marcado en el roadmap. En `04-api.md` se quitó la propiedad `write-bigdecimal-as-plain`: no hace falta porque la escala 2 ya se serializa en plano.
+- **Verificación:**
+  - `./mvnw verify`: 63 unit + 13 IT en verde, JaCoCo y Spotless OK.
+  - Manual contra `global_postgres`: Flyway aplicó V2; 200 (con tildes correctas y `0.10`), 404, 400 y 401.
+- **Incidencia:** la primera prueba manual respondió desde un proceso antiguo del hito 2 que seguía en el puerto 8080; se paró y se repitió.
+- **Decisiones / correcciones humanas:** Ninguna.
+- **Resultado:** Hito 3 completado; sin commit.
+
+### #16 · 2026-10-28 20:29 · Commit y push del hito 3
+- **Herramienta:** Claude Code (Claude Opus 5.5)
+- **Prompt (resumen):** Hacer commit y push.
+- **Qué hizo la IA:** Commit `feat(product): add product lookup by code with seeded catalog` en `main` y push a `origin/main`.
+- **Decisiones / correcciones humanas:** Ninguna.
+- **Resultado:** Hito 3 publicado en `origin/main`.

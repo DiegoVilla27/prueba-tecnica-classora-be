@@ -18,11 +18,11 @@ Se trabaja primero el backend completo y desplegado; después el front lo consum
 - [x] `DatabaseSeeder`: un cajero desde `seed.cashier.*`.
 - [x] Tests + `AuthIT`.
 
-## Hito 3 · `product` ⭐ — ~2 h
-- [ ] `ProductModel`, puerto, service, adapter, mappers.
-- [ ] `GET /products/{code}` + docs.
-- [ ] `V2__seed_products.sql` (= fixtures del front).
-- [ ] Tests + `ProductLookupIT`.
+## Hito 3 · `product` ⭐ ✅
+- [x] `ProductModel`, puerto, service, adapter, mappers.
+- [x] `GET /products/{code}` + docs.
+- [x] `V2__seed_products.sql` (= fixtures del front).
+- [x] Tests + `ProductLookupIT`.
 
 ## Hito 4 · `sale` — ~4 h
 - [ ] `SaleModel`, `SaleLine`, `SaleStatus`, `Quantity`, excepciones + `SaleModelTest`.

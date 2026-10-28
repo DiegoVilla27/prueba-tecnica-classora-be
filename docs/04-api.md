@@ -44,7 +44,7 @@ Auth: `Authorization: Bearer <accessToken>` salvo `/auth/**`, `/api-docs/**` y `
 ```json
 { "id": "6f1c1a7e-…", "code": "8410001000011", "name": "Leche entera 1L", "price": 0.95 }
 ```
-`price` decimal plano (`spring.jackson.generator.write-bigdecimal-as-plain=true`); el front lo pasa a céntimos.
+`price` es un número JSON con 2 decimales (`NUMERIC(12,2)` → `BigDecimal` escala 2, p. ej. `0.10`); el front lo pasa a céntimos.
 
 ### `SaleAddLineRequestDTO`
 ```java
