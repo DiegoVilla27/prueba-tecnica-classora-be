@@ -89,6 +89,6 @@ Protección de ramas: `main` y `dev` solo por PR con CI en verde.
 - [x] Proyecto Neon con ramas `dev` y `prod`.
 - [x] Servicios Render `pos-api-dev` y `pos-api-prod` con variables y deploy hooks.
 - [x] Secrets en GitHub.
-- [ ] Rama `dev` creada desde `main` y protegida.
+- [x] Rama `dev` creada desde `main` y protegida.
 - [x] URLs reales en este doc y en `04-api.md` (`OpenApiConfig` usa la URL relativa `/api/v1`, válida en todos los entornos).
 - [ ] URLs en el front.
