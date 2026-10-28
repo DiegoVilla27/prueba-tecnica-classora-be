@@ -96,3 +96,67 @@ Registro del uso de inteligencia artificial en el backend. Complementa la **Part
 - **Qué hizo la IA:** Commit `docs: expand scope to deployed backend with jwt auth` con los cambios de las peticiones #05 y #06, push a `origin/main` y este commit del log.
 - **Decisiones / correcciones humanas:** Ninguna.
 - **Resultado:** Hecho.
+
+### #08 · 2026-10-28 16:20 · Hito 1: setup del proyecto y core
+- **Herramienta:** Claude Code (Claude Opus 5.5)
+- **Prompt (resumen):** Empezar con el back (trabajando directamente en `main`).
+- **Qué hizo la IA:**
+  - Proyecto Maven con Spring Boot 4.1.1 y Java 21:
+    - starters webmvc, data-jpa, validation, security, actuator y flyway;
+    - MapStruct, springdoc, jjwt, Bucket4j, dotenv-java y Testcontainers 2;
+    - plugins Spotless, JaCoCo (≥ 80 % en domain/application) y Failsafe;
+    - Maven wrapper.
+  - Portó el `core` de task-manager (errors, openapi, security) y lo adaptó:
+    - JWT sin roles, con claim `type` (access/refresh); `JwtModel` en camelCase;
+    - `PermissionValidator` solo comprueba la propiedad;
+    - CORS por entorno (`CORS_ALLOWED_ORIGINS`);
+    - rate limiting con un bucket estricto para `/auth/login` y cabecera `Retry-After`;
+    - OpenAPI con servidor relativo y nuevas respuestas 422 y 429;
+    - `/actuator/health` público.
+  - Descartó `AtLeastOneField` (YAGNI).
+  - Configuración:
+    - perfiles `local`/`docker`/`dev`/`prod` con secretos por entorno;
+    - `PosApplication` carga `.env`; `.env.example`;
+    - `server.port=${PORT:8080}` y cabeceras de proxy para Render.
+  - Flyway `V1__init.sql` con el esquema completo y sus constraints.
+  - `Dockerfile` multi-stage (usuario no root) y `docker-compose.yml` en `shared-network`.
+  - Adaptó los tests del core (34) y añadió `PosApplicationIT` con PostgreSQL en Testcontainers (3).
+- **Verificación:**
+  - `./mvnw verify` en verde: 34 unit + 3 IT, Spotless y JaCoCo.
+  - App arrancada contra `global_postgres` (BD `pos_db`): health UP, Swagger 200, 401 con `ErrorResponseDTO`, preflight CORS 200 y Flyway aplicado.
+  - Imagen Docker levantada con perfil `docker` y health UP.
+- **Decisiones / correcciones humanas:** El autor eligió trabajar en `main` en lugar de una rama `feature/*`.
+- **Notas:** El puerto 8080 de la máquina lo ocupa el contenedor `pokedex_api` del autor (no se tocó). Las pruebas usaron el 8081 y `docker-compose` permite `API_PORT`.
+- **Resultado:** Hito 1 completado; sin commit.
+
+### #09 · 2026-10-28 16:23 · Quitar dotenv: configuración en application-<perfil>.properties
+- **Herramienta:** Claude Code (Claude Opus 5.5)
+- **Prompt (resumen):** El autor corrigió el uso de `dotenv-java`: en task-manager la configuración vive en `application-xxx.properties`, no en `.env`. También preguntó por el contenedor `pokedex` mencionado en #08.
+- **Qué hizo la IA:**
+  - Eliminó la dependencia `dotenv-java`, el cargador de `.env` en `PosApplication`, `.env` y `.env.example`, el `env_file` de `docker-compose.yml` y la variable `API_PORT` (puerto fijo `8080:8080` como task-manager).
+  - Reorganizó la configuración:
+    - `application.properties`: valores comunes.
+    - `application-local|docker.properties`: valores de desarrollo directos (BD, secretos JWT de desarrollo, CORS, cajero demo en `seed.cashier.*`).
+    - `application-dev|prod.properties`: valores sensibles como placeholders `${VARIABLE}` que Spring resuelve con las variables de entorno de Render, para no commitear credenciales reales.
+  - Actualizó `CLAUDE.md`, `README` y los docs `01`, `03`, `05`, `07` y `08`.
+- **Sobre "pokedex":** `docker ps` mostró que los contenedores `pokedex_api` (puerto 8080) y `pokedex_backoffice` (4200) siguen corriendo desde hace 6 días. Pertenecen al proyecto compose `/Users/diegovilla/Desktop/pokedex-system`, cuya carpeta ya no existe. Por eso el 8080 está ocupado; no se tocaron.
+- **Decisiones / correcciones humanas:** Corrección del autor: configuración por perfiles en `.properties`, sin `.env`.
+- **Verificación:** `./mvnw verify` en verde (34 unit + 3 IT). Arranque con perfil `local` (en el 8081, por el puerto ocupado): health UP y 401 correcto.
+- **Resultado:** Hecho; sin commit.
+
+### #10 · 2026-10-28 16:26 · Verificación en el puerto 8080
+- **Herramienta:** Claude Code (Claude Opus 5.5)
+- **Prompt (resumen):** El autor eliminó los contenedores Docker que no usa.
+- **Qué hizo la IA:** Comprobó que solo queda la infraestructura global (`global_postgres`, `global_redis`, `global_mongodb`, `global_rabbitmq`) y que el 8080 está libre. Arrancó la API en el 8080 con el perfil `local` (health UP) y con `docker compose` y el perfil `docker` (health UP, Swagger 200).
+- **Decisiones / correcciones humanas:** Ninguna.
+- **Resultado:** Hito 1 verificado en el puerto por defecto; sin commit.
+
+### #11 · 2026-10-28 16:30 · Explicar Flyway y commitear el hito 1
+- **Herramienta:** Claude Code (Claude Opus 5.5)
+- **Prompt (resumen):** El autor preguntó qué es `V1__init.sql` y Flyway frente a crear las tablas desde las entities (`ddl-auto=update` en task-manager). Después pidió commit y push.
+- **Qué hizo la IA:**
+  - Explicó la diferencia: las entities mapean los datos y Flyway define el esquema; Hibernate solo valida.
+  - Explicó por qué conviene con BD de producción: historial versionado, migraciones de datos, mismo esquema en todos los entornos, y el índice parcial y los `CHECK` que JPA no expresa.
+  - Commit y push del hito 1 en `main`.
+- **Decisiones / correcciones humanas:** El autor acepta mantener Flyway.
+- **Resultado:** Hito 1 publicado en `origin/main`.

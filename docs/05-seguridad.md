@@ -39,10 +39,11 @@ Claims: `sub` (userId), `email`, `type` (`access`/`refresh`), `iat`, `exp`. El f
 Orígenes por entorno vía `CORS_ALLOWED_ORIGINS`: `http://localhost:[*]` (local/docker), dominio de Vercel de dev (preview) y de prod. Métodos `GET, POST, PATCH, DELETE, OPTIONS`; headers `Authorization, Content-Type`; `maxAge` 3600.
 
 ## 7. Secretos
-- **Nunca** en el repo. `application*.properties` solo con `${VAR}`.
-- Local: `.env` (ignorado) leído con `dotenv-java`; `.env.example` versionado.
-- Render: variables de entorno del servicio. GitHub Actions: secrets del repositorio.
-- Variables: `DATABASE_URL`, `DATABASE_USERNAME`, `DATABASE_PASSWORD`, `JWT_SECRET`, `JWT_REFRESH_SECRET`, `CORS_ALLOWED_ORIGINS`, `SEED_CASHIER_FIRST_NAME`, `SEED_CASHIER_LAST_NAME`, `SEED_CASHIER_EMAIL`, `SEED_CASHIER_PASSWORD`.
+- Configuración en `application-<perfil>.properties`, como task-manager.
+- `local` / `docker`: valores de desarrollo escritos en el propio archivo (BD local, secretos JWT de desarrollo, cajero demo).
+- `dev` / `prod`: los valores sensibles son placeholders `${VARIABLE}` en `application-dev|prod.properties`, resueltos por Spring con las variables de entorno del servicio de Render. Nunca se commitean credenciales reales.
+- GitHub Actions: secrets del repositorio (deploy hooks).
+- Variables de Render: `DATABASE_URL`, `DATABASE_USERNAME`, `DATABASE_PASSWORD`, `JWT_SECRET`, `JWT_REFRESH_SECRET`, `CORS_ALLOWED_ORIGINS`, `SEED_CASHIER_PASSWORD` (solo dev/prod).
 
 ## 8. Otras medidas
 - Validación de toda entrada; regex en path variables.

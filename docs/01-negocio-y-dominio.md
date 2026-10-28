@@ -60,7 +60,7 @@ La prueba (Parte 3) pregunta cómo integrarías el front con un backend Java. En
 
 ### `UserModel` (feature `user`, como task-manager)
 `id`, `firstName`, `lastName`, `email` (único), `passwordHash`, timestamps. **Sin roles**: todo usuario es un cajero (lo que el enunciado describe).
-Los usuarios **no** se registran: el `DatabaseSeeder` crea **un cajero** por entorno con sus datos (`SEED_CASHIER_FIRST_NAME`, `SEED_CASHIER_LAST_NAME`, `SEED_CASHIER_EMAIL`, `SEED_CASHIER_PASSWORD`).
+Los usuarios **no** se registran: el `DatabaseSeeder` crea **un cajero** por entorno con los datos de `seed.cashier.*` en `application-<perfil>.properties` (en dev/prod la contraseña llega como `${SEED_CASHIER_PASSWORD}`).
 
 ### `ProductModel` (feature `product`)
 `id`, `code` (solo dígitos, 4–14, único), `name`, `price` (`BigDecimal` ≥ 0), timestamps. Catálogo cargado por migración Flyway (`V2__seed_products.sql`), idéntico a los fixtures MSW del front.

@@ -102,11 +102,11 @@ src/main/java/com/diegovilla/pos/
 └── utils/data/{StringUtils, ValidateDataUtils}.java
 
 src/main/resources/
-├── application.properties            # común: context-path, swagger, jackson, jwt/rate-limit vía ${ENV}
-├── application-local.properties      # localhost:5432/pos_db
-├── application-docker.properties     # global_postgres:5432/pos_db (red shared-network)
-├── application-dev.properties        # Neon rama dev (${DATABASE_URL}…)
-├── application-prod.properties       # Neon rama main (${DATABASE_URL}…)
+├── application.properties            # común: context-path, swagger, flyway, duraciones JWT, rate limit, actuator
+├── application-local.properties      # localhost:5432/pos_db + secretos de desarrollo + cajero demo
+├── application-docker.properties     # global_postgres:5432/pos_db (red shared-network) + ídem
+├── application-dev.properties        # Neon rama dev: valores sensibles como ${VARIABLE} (Render)
+├── application-prod.properties       # Neon rama main: ídem
 └── db/migration/
     ├── V1__init.sql                  # users, products, sales, sale_lines + constraints
     └── V2__seed_products.sql         # catálogo ficticio (= fixtures MSW del front)
@@ -174,7 +174,7 @@ sale_lines  id UUID PK · sale_id FK → sales ON DELETE CASCADE · product_id F
 ```
 - `SaleEntity` `@OneToMany(mappedBy = "sale", cascade = ALL, orphanRemoval = true) @OrderBy("position")`, `@Version`.
 - `spring.jpa.hibernate.ddl-auto=validate` en todos los perfiles: el esquema es de Flyway.
-- `DatabaseSeeder` (todos los perfiles, idempotente): crea **un cajero** si no existe, con `SEED_CASHIER_FIRST_NAME`, `SEED_CASHIER_LAST_NAME`, `SEED_CASHIER_EMAIL` y `SEED_CASHIER_PASSWORD` (hash BCrypt). No va en Flyway para no versionar contraseñas.
+- `DatabaseSeeder` (todos los perfiles, idempotente): crea **un cajero** si no existe con `seed.cashier.first-name`, `last-name`, `email` y `password` (hash BCrypt) de `application-<perfil>.properties`. No va en Flyway para no versionar contraseñas.
 
 ## 6. Decisiones (ADRs)
 

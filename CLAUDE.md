@@ -27,7 +27,7 @@ API REST **realista y desplegada** para la caja de un supermercado:
 | Boilerplate | Lombok (`@Getter`, `@RequiredArgsConstructor`, `@Slf4j`); **nunca** `@Data` ni setters en dominio |
 | Seguridad | Spring Security 6 · JWT doble token (jjwt) · **sin roles** (todo usuario es cajero) · Bucket4j · CORS |
 | Docs API | springdoc-openapi · Swagger en `/api/v1/api-docs/swagger-ui.html` · una anotación de documentación por endpoint |
-| Config | `server.servlet.context-path=/api/v1` · perfiles `local`, `docker`, `dev`, `prod` · secretos **solo** por variables de entorno (`dotenv-java` en local) |
+| Config | `server.servlet.context-path=/api/v1` · perfiles `local`, `docker`, `dev`, `prod` en `application-<perfil>.properties` (como task-manager) |
 | Calidad | Spotless (Google Java Format AOSP) · JaCoCo · SonarCloud (opcional) |
 | Tests | JUnit 5 · Mockito · AssertJ · Testcontainers (integración) |
 | Entrega | Dockerfile multi-stage (Temurin 21 JRE) · Render · Neon (ramas `dev` / `main`) · GitHub Actions |
@@ -84,7 +84,7 @@ infrastructure ──▶ application ──▶ domain
 - **Mappers**: MapStruct `componentModel = "spring"`; Entity → Model con `default` + `reconstruct`.
 - **Errores**: se lanzan excepciones; los handlers devuelven `ErrorResponseDTO { timestamp, status, error, message, errors[] }` (también 401/403/429).
 - **Persistencia**: el esquema lo define **Flyway** (`V1__init.sql`, `V2__seed_products.sql`…); nunca `ddl-auto=update`. Constraints con nombre (`uk_products_code`) y su `DatabaseExceptionResolver`.
-- **Secretos**: nunca en `application*.properties` del repo; siempre `${ENV_VAR}`. `.env` en `.gitignore`, `.env.example` versionado.
+- **Configuración**: toda en `application.properties` (común) + `application-<perfil>.properties`, como task-manager. `local` y `docker` llevan sus valores directamente (son de desarrollo). En `dev` y `prod` los valores sensibles se escriben como `${VARIABLE}` y los resuelve Spring con las variables de entorno de Render: nunca se commitean credenciales reales.
 - **Javadoc** en clases y métodos públicos (`@since 1.0.0`).
 - **Dinero**: `BigDecimal` escala 2, `HALF_EVEN`; `NUMERIC(12,2)`. **Tiempo**: `Instant` UTC. **IDs**: `UUID`.
 - `./mvnw spotless:apply` antes de terminar.

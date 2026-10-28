@@ -28,10 +28,26 @@ Estilo heredado de [task-manager](https://github.com/DiegoVilla27/task-manager-s
 | dev | _pendiente_ | _pendiente_ |
 | prod | _pendiente_ | _pendiente_ |
 
-## ▶️ Ejecutar *(se completará al implementar)*
+## ▶️ Ejecutar en local
+
+Requisitos: Java 21, Docker y la infraestructura compartida (`~/Desktop/shared-network`, contenedor `global_postgres`). La configuración de cada entorno está en `src/main/resources/application-<perfil>.properties`.
+
 ```bash
-cp .env.example .env
-./mvnw spring-boot:run          # perfil local (requiere global_postgres)
-./mvnw verify                   # unit + integración + spotless + jacoco
-docker compose up --build -d    # perfil docker
+# 1. Base de datos (una vez)
+docker compose -f ~/Desktop/shared-network/docker-compose.yml up -d postgres
+docker exec global_postgres psql -U user -d postgres -c "CREATE DATABASE pos_db;"
+
+# 2a. API en la máquina (perfil local) → http://localhost:8080/api/v1
+./mvnw spring-boot:run
+
+# 2b. o API en contenedor (perfil docker, red shared-network)
+docker compose up --build -d
+
+# Calidad
+./mvnw test                             # unit
+./mvnw verify                           # unit + integración (Testcontainers) + Spotless + JaCoCo
+./mvnw spotless:apply                   # formatear
 ```
+
+- Swagger UI: `http://localhost:8080/api/v1/api-docs/swagger-ui.html`
+- Health: `http://localhost:8080/api/v1/actuator/health`

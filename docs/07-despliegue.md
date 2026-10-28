@@ -21,8 +21,7 @@ docker compose -f ~/Desktop/shared-network/docker-compose.yml up -d postgres
 docker exec -it global_postgres psql -U user -c "CREATE DATABASE pos_db;"
 
 # 2a. API en la máquina
-cp .env.example .env
-./mvnw spring-boot:run                       # perfil local
+./mvnw spring-boot:run                       # perfil local (application-local.properties)
 
 # 2b. o API en contenedor
 docker compose up --build -d                 # perfil docker
@@ -39,7 +38,6 @@ services:
     build: .
     container_name: pos_api
     restart: always
-    env_file: .env
     environment:
       - SPRING_PROFILES_ACTIVE=docker
     ports:
@@ -53,8 +51,9 @@ El front tiene su propio `docker-compose.yml` en la misma red, así que con ambo
 
 ## 3. Render (dev y prod)
 - Dos servicios **Web Service (Docker)**: `pos-api-dev` y `pos-api-prod`, con deploy automático desactivado (lo dispara CI con *deploy hook*).
-- Variables por servicio: `SPRING_PROFILES_ACTIVE`, `DATABASE_URL`, `DATABASE_USERNAME`, `DATABASE_PASSWORD`, `JWT_SECRET`, `JWT_REFRESH_SECRET`, `CORS_ALLOWED_ORIGINS`, `SEED_CASHIER_*`.
+- Variables por servicio (las que `application-dev|prod.properties` referencian como `${...}`): `SPRING_PROFILES_ACTIVE`, `DATABASE_URL`, `DATABASE_USERNAME`, `DATABASE_PASSWORD`, `JWT_SECRET`, `JWT_REFRESH_SECRET`, `CORS_ALLOWED_ORIGINS`, `SEED_CASHIER_PASSWORD`.
 - Health check: `/api/v1/actuator/health`.
+- Render inyecta `PORT`: la app escucha en `server.port=${PORT:8080}` y confía en las cabeceras `X-Forwarded-*` del proxy (`server.forward-headers-strategy=framework`).
 - **Arranque en frío** (plan gratuito, unos 50 s): el front lo gestiona con un estado "Conectando con el servidor…" y reintento (ver docs del front).
 
 ## 4. Neon

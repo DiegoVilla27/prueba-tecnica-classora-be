@@ -1,0 +1,19 @@
+# API container on the external "shared-network" (see docs/07-despliegue.md).
+# Requires global_postgres from ~/Desktop/shared-network/docker-compose.yml and a pos_db database.
+name: classora-pos
+
+networks:
+  shared-network:
+    external: true
+
+services:
+  pos-api:
+    build: .
+    container_name: pos_api
+    restart: always
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    ports:
+      - "8080:8080"
+    networks:
+      - shared-network
