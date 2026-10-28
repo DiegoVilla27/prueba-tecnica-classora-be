@@ -20,10 +20,10 @@ class ProductModelTest {
 
         ProductModel product =
                 ProductModel.reconstruct(
-                        id, "8410001000011", "Leche entera 1L", new BigDecimal("0.95"), now, now);
+                        id, "8412345000010", "Leche entera 1L", new BigDecimal("0.95"), now, now);
 
         assertThat(product.getId()).isEqualTo(id);
-        assertThat(product.getCode()).isEqualTo("8410001000011");
+        assertThat(product.getCode()).isEqualTo("8412345000010");
         assertThat(product.getName()).isEqualTo("Leche entera 1L");
         assertThat(product.getPrice()).isEqualByComparingTo("0.95");
         assertThat(product.getCreatedAt()).isEqualTo(now);
@@ -39,7 +39,7 @@ class ProductModelTest {
                         () ->
                                 ProductModel.reconstruct(
                                         UUID.randomUUID(),
-                                        "8410001000011",
+                                        "8412345000010",
                                         "Leche entera 1L",
                                         null,
                                         now,

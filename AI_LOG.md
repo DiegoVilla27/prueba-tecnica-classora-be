@@ -350,3 +350,26 @@ Registro del uso de inteligencia artificial en el backend. Complementa la **Part
   - Primer cambio por el flujo protegido: rama `feature/hito-6-entrega` → PR a `dev` → PR a `main`.
 - **Decisiones / correcciones humanas:** Ninguna.
 - **Resultado:** Backend terminado y documentado.
+
+### #27 · 2026-10-28 23:15 · Merge del hito 6 hasta main
+- **Herramienta:** Claude Code (Claude Opus 5.5)
+- **Prompt (resumen):** Subir el hito 6 hasta `main`.
+- **Qué hizo la IA:** Esperó el CI del PR #1 (en verde; el deploy se salta en los PR) y lo mergeó en `dev`. Abrió el PR #2 `dev` → `main`, esperó el CI y lo mergeó. Comprobó el run de `main` (todos los jobs y el deploy en verde) y el health de dev y prod (200). Sincronizó el `main` local.
+- **Decisiones / correcciones humanas:** Ninguna.
+- **Resultado:** Backend completo en producción.
+
+### #28 · 2026-10-28 23:25 · Limpiar la BD y catálogo fijo de 20 productos EAN-13
+- **Herramienta:** Claude Code (Claude Opus 5.5)
+- **Prompt (resumen):** Limpiar la BD de local, dev y prod, dejando solo el usuario y 20 productos con código real; no quiere el código de 4 dígitos.
+- **Qué hizo la IA:**
+  - **`V3__reset_data_and_reseed_products.sql`:**
+    - borra `sale_lines`, `sales`, `users` y `products`;
+    - inserta 20 productos con EAN-13 válidos (prefijo GS1 España `84`, dígito de control calculado) y UUID fijos;
+    - el `DatabaseSeeder` recrea el único cajero al arrancar.
+    - No se editó `V2` porque ya está aplicada en los tres entornos (Flyway rechazaría el checksum).
+  - Sustituyó los códigos de ejemplo de los tests, los `@Schema` y los docs, y añadió dos IT: el catálogo tiene 20 productos `84` + 11 dígitos, y el antiguo `1001` da 404.
+  - **Verificación:**
+    - `./mvnw verify`: 107 unit + 19 IT en verde.
+    - BD local: el usuario tenía la API corriendo desde su IDE en el 8080 y no se paró; se arrancó una segunda instancia en el 8081 para migrar. Resultado: V3 aplicada, 1 usuario, 0 ventas, 20 productos y login 200.
+- **Decisiones / correcciones humanas:** El usuario quiere el catálogo fijo y sin el código PLU de 4 dígitos. Los códigos son EAN-13 válidos pero no de marcas reales; la validación sigue aceptando de 4 a 14 dígitos.
+- **Resultado:** Pendiente de desplegar en dev y prod por PR.

@@ -42,7 +42,7 @@ Auth: `Authorization: Bearer <accessToken>` salvo `/auth/**`, `/api-docs/**` y `
 
 ### `ProductResponseDTO`
 ```json
-{ "id": "6f1c1a7e-…", "code": "8410001000011", "name": "Leche entera 1L", "price": 0.95 }
+{ "id": "6f1c1a7e-…", "code": "8412345000010", "name": "Leche entera 1L", "price": 0.95 }
 ```
 `price` es un número JSON con 2 decimales (`NUMERIC(12,2)` → `BigDecimal` escala 2, p. ej. `0.10`); el front lo pasa a céntimos.
 
@@ -50,7 +50,7 @@ Auth: `Authorization: Bearer <accessToken>` salvo `/auth/**`, `/api-docs/**` y `
 ```java
 @Schema(description = "Request body to add a product to a sale by its code")
 public record SaleAddLineRequestDTO(
-        @Schema(description = "Scannable product code", example = "8410001000011", requiredMode = REQUIRED)
+        @Schema(description = "Scannable product code", example = "8412345000010", requiredMode = REQUIRED)
         @NotBlank(message = "Code is required")
         @Pattern(regexp = "^\\d{4,14}$", message = "Code must contain 4 to 14 digits")
         String code,
@@ -68,7 +68,7 @@ public record SaleAddLineRequestDTO(
   "status": "OPEN",
   "cashierId": "…",
   "lines": [
-    { "id": "…", "productId": "…", "code": "8410001000011", "name": "Leche entera 1L",
+    { "id": "…", "productId": "…", "code": "8412345000010", "name": "Leche entera 1L",
       "unitPrice": 0.95, "quantity": 2, "subtotal": 1.90 }
   ],
   "itemCount": 2,

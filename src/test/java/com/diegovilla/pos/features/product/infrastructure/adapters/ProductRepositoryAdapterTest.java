@@ -21,7 +21,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class ProductRepositoryAdapterTest {
 
-    private static final String CODE = "8410001000011";
+    private static final String CODE = "8412345000010";
 
     @Mock private ProductJpaRepository productJpaRepository;
     @Mock private ProductEntityMapper productEntityMapper;
