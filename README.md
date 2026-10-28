@@ -1,7 +1,7 @@
 # 🧾 Classora TPV — Backend (Spring Boot)
 
 API REST de la caja de supermercado (prueba técnica Classora): **cajeros autenticados con JWT**, **consulta de producto por código** y **gestión de la venta**, desplegada en `dev` y `prod`.
-**Java 21 · Spring Boot · Hexagonal por features · DDD · Spring Security + JWT · Flyway · PostgreSQL (Neon) · OpenAPI · Docker · Render · GitHub Actions**.
+**Java 17 · Spring Boot 4.1.0 · Hexagonal por features · DDD · Spring Security + JWT · Flyway · PostgreSQL (Neon) · OpenAPI · Docker · Render · GitHub Actions**.
 Estilo heredado de [task-manager](https://github.com/DiegoVilla27/task-manager-system/tree/main/apps/task-manager).
 
 > Frontend: `prueba-tecnica-classora-fe` (React · Vercel).
@@ -30,7 +30,7 @@ Estilo heredado de [task-manager](https://github.com/DiegoVilla27/task-manager-s
 
 ## ▶️ Ejecutar en local
 
-Requisitos: Java 21, Docker y la infraestructura compartida (`~/Desktop/shared-network`, contenedor `global_postgres`). La configuración de cada entorno está en `src/main/resources/application-<perfil>.properties`.
+Requisitos: JDK 17 o superior (el proyecto compila a Java 17, como task-manager; la imagen Docker usa Temurin 21), Docker y la infraestructura compartida (`~/Desktop/shared-network`, contenedor `global_postgres`). La configuración de cada entorno está en `src/main/resources/application-<perfil>.properties`.
 
 ```bash
 # 1. Base de datos (una vez)
@@ -49,5 +49,6 @@ docker compose up --build -d
 ./mvnw spotless:apply                   # formatear
 ```
 
-- Swagger UI: `http://localhost:8080/api/v1/api-docs/swagger-ui.html`
+- Swagger UI: `http://localhost:8080/api/v1/api-docs/swagger-ui.html` → `POST /auth/login` y pulsa **Authorize** con el `accessToken`.
+- Cajero demo (local/docker): `cajero@pos.local` / `cajero1234`.
 - Health: `http://localhost:8080/api/v1/actuator/health`

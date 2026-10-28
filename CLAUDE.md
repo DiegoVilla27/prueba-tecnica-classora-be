@@ -21,7 +21,7 @@ API REST **realista y desplegada** para la caja de un supermercado:
 
 | Ámbito | Elección |
 |---|---|
-| Lenguaje / framework | Java 21 · Spring Boot (misma versión que task-manager) · Web MVC · Data JPA · Validation · Security · Actuator |
+| Lenguaje / framework | Java 17 · Spring Boot 4.1.0 (mismas versiones que task-manager; imagen Docker Temurin 21) · Web MVC · Data JPA · Validation · Security · Actuator |
 | Persistencia | PostgreSQL · **Flyway** (`db/migration`) · `ddl-auto=validate` |
 | Mapeo | MapStruct (+ `lombok-mapstruct-binding`) |
 | Boilerplate | Lombok (`@Getter`, `@RequiredArgsConstructor`, `@Slf4j`); **nunca** `@Data` ni setters en dominio |
@@ -86,6 +86,7 @@ infrastructure ──▶ application ──▶ domain
 - **Persistencia**: el esquema lo define **Flyway** (`V1__init.sql`, `V2__seed_products.sql`…); nunca `ddl-auto=update`. Constraints con nombre (`uk_products_code`) y su `DatabaseExceptionResolver`.
 - **Configuración**: toda en `application.properties` (común) + `application-<perfil>.properties`, como task-manager. `local` y `docker` llevan sus valores directamente (son de desarrollo). En `dev` y `prod` los valores sensibles se escriben como `${VARIABLE}` y los resuelve Spring con las variables de entorno de Render: nunca se commitean credenciales reales.
 - **Javadoc** en clases y métodos públicos (`@since 1.0.0`).
+- **`.properties` y caracteres no ASCII**: Spring los lee como ISO-8859-1; escribir tildes como `\u00f3` (p. ej. `L\u00f3pez`).
 - **Dinero**: `BigDecimal` escala 2, `HALF_EVEN`; `NUMERIC(12,2)`. **Tiempo**: `Instant` UTC. **IDs**: `UUID`.
 - `./mvnw spotless:apply` antes de terminar.
 

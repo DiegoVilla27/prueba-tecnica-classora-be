@@ -5,18 +5,18 @@ Se trabaja primero el backend completo y desplegado; después el front lo consum
 ## Hito 0 · Documentación ✅
 
 ## Hito 1 · Setup y core ✅
-- [x] Spring Initializr (Java 21, Maven): web, data-jpa, validation, security, actuator, postgresql, flyway, lombok.
+- [x] Spring Initializr (Java 17, Spring Boot 4.1.0, Maven): web, data-jpa, validation, security, actuator, postgresql, flyway, lombok.
 - [x] mapstruct, springdoc-openapi, jjwt, bucket4j, testcontainers; spotless, jacoco, failsafe.
 - [x] Perfiles `local`, `docker`, `dev`, `prod` en `application-<perfil>.properties` (dev/prod con placeholders para Render).
 - [x] `core/` desde task-manager: errors, openapi, security (JWT sin roles, CORS por entorno, rate limit con bucket de login). El seeder se hace en el hito 2.
 - [x] `V1__init.sql` (esquema completo).
 - [x] `Dockerfile` + `docker-compose.yml` (red `shared-network`).
 
-## Hito 2 · `user` + `auth` — ~2 h
-- [ ] `UserModel` (cajero, sin roles), puertos, adapters, `/users/me`.
-- [ ] `AuthService` (login, refresh), `AuthController` + docs.
-- [ ] `DatabaseSeeder`: un cajero desde `seed.cashier.*`.
-- [ ] Tests + `AuthIT`.
+## Hito 2 · `user` + `auth` ✅
+- [x] `UserModel` (cajero, sin roles), puertos, adapters, `/users/me`.
+- [x] `AuthService` (login, refresh), `AuthController` + docs.
+- [x] `DatabaseSeeder`: un cajero desde `seed.cashier.*`.
+- [x] Tests + `AuthIT`.
 
 ## Hito 3 · `product` ⭐ — ~2 h
 - [ ] `ProductModel`, puerto, service, adapter, mappers.
