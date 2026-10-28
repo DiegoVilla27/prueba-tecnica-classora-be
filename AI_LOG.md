@@ -89,3 +89,10 @@ Registro del uso de inteligencia artificial en el backend. Complementa la **Part
   - Movió "Roles" a "Fuera de alcance" del roadmap.
 - **Decisiones / correcciones humanas:** Corrección del autor: sin roles; solo cajero; un cajero sembrado.
 - **Resultado:** Docs y skills actualizados (`CLAUDE.md`, `01`–`08`, `README`, `new-endpoint`); sin código; sin commit.
+
+### #07 · 2026-10-28 16:10 · Commit y push del nuevo alcance
+- **Herramienta:** Claude Code (Claude Opus 5.5)
+- **Prompt (resumen):** Hacer commit y push en ambos repos.
+- **Qué hizo la IA:** Commit `docs: expand scope to deployed backend with jwt auth` con los cambios de las peticiones #05 y #06, push a `origin/main` y este commit del log.
+- **Decisiones / correcciones humanas:** Ninguna.
+- **Resultado:** Hecho.
