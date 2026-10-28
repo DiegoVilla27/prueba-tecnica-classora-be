@@ -21,8 +21,8 @@ import org.junit.jupiter.api.Test;
 class SaleModelTest {
 
     private final UUID cashierId = UUID.randomUUID();
-    private final ProductModel milk = product("8410001000011", "Leche entera 1L", "0.95");
-    private final ProductModel bag = product("8410001000110", "Bolsa de papel", "0.10");
+    private final ProductModel milk = product("8412345000010", "Leche entera 1L", "0.95");
+    private final ProductModel bag = product("8412345000119", "Bolsa de papel", "0.10");
 
     private static ProductModel product(String code, String name, String price) {
         return ProductModel.reconstruct(
@@ -52,7 +52,7 @@ class SaleModelTest {
 
         SaleLine line = sale.getLines().get(0);
         assertThat(line.getProductId()).isEqualTo(milk.getId());
-        assertThat(line.getProductCode()).isEqualTo("8410001000011");
+        assertThat(line.getProductCode()).isEqualTo("8412345000010");
         assertThat(line.getProductName()).isEqualTo("Leche entera 1L");
         assertThat(line.getUnitPrice()).isEqualByComparingTo("0.95");
         assertThat(line.getQuantity().value()).isEqualTo(2);
@@ -112,7 +112,7 @@ class SaleModelTest {
 
         assertThat(sale.getLines())
                 .extracting(SaleLine::getProductCode)
-                .containsExactly("8410001000110");
+                .containsExactly("8412345000119");
     }
 
     @Test
@@ -202,7 +202,7 @@ class SaleModelTest {
                 SaleLine.reconstruct(
                         UUID.randomUUID(),
                         milk.getId(),
-                        "8410001000011",
+                        "8412345000010",
                         "Leche entera 1L",
                         new BigDecimal("0.95"),
                         2);

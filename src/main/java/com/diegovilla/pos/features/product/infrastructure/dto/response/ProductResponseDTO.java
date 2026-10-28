@@ -17,9 +17,9 @@ import java.util.UUID;
 public record ProductResponseDTO(
         @Schema(
                         description = "Unique identifier of the product",
-                        example = "0b6e4c4e-1a2b-4c3d-8e9f-000000000001")
+                        example = "0b6e4c4e-1a2b-4c3d-8e9f-100000000001")
                 UUID id,
-        @Schema(description = "Scannable product code", example = "8410001000011") String code,
+        @Schema(description = "Scannable product code", example = "8412345000010") String code,
         @Schema(description = "Display name of the product", example = "Leche entera 1L")
                 String name,
         @Schema(description = "Unit price with 2 decimals", example = "0.95") BigDecimal price) {}

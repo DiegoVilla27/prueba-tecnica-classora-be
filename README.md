@@ -28,7 +28,7 @@ Arquitectura **hexagonal por features + DDD**, con el mismo estilo que [task-man
 
 > ⏳ dev y prod usan el plan gratuito de Render: tras 15 min sin uso el servicio se duerme y la primera petición tarda unos 50 s.
 
-**Probarlo en Swagger:** `POST /auth/login` con el cajero demo → copia el `accessToken` → **Authorize** → `POST /sales` → `POST /sales/{id}/lines` con `{ "code": "8410001000011", "quantity": 1 }`.
+**Probarlo en Swagger:** `POST /auth/login` con el cajero demo → copia el `accessToken` → **Authorize** → `POST /sales` → `POST /sales/{id}/lines` con `{ "code": "8412345000010", "quantity": 1 }`.
 
 ---
 
@@ -84,7 +84,7 @@ sequenceDiagram
 - **DDD:** `SaleModel` es el agregado raíz; `SaleLine` solo cambia a través de él; `Quantity` y `SaleStatus` son value objects. Las reglas (una línea por producto, 1–999, no cobrar vacía, no tocar una venta cerrada) viven en el dominio.
 - **Concurrencia:** `@Version` + constraints con nombre (`ux_sales_one_open_per_cashier`, `uk_sale_lines_sale_product`) traducidos a 409; nunca 500 ni unidades perdidas.
 - **Seguridad:** JWT doble token (acceso 1 h, refresco 7 días) con claves distintas, sin roles (todo usuario es cajero), propiedad de la venta, Bucket4j y CORS por entorno.
-- **Persistencia:** el esquema lo define Flyway (`V1__init.sql`, `V2__seed_products.sql` con 12 productos); Hibernate solo valida (`ddl-auto=validate`).
+- **Persistencia:** el esquema lo define Flyway (`V1__init.sql`, `V3__reset_data_and_reseed_products.sql` con 20 productos EAN-13); Hibernate solo valida (`ddl-auto=validate`).
 
 ```text
 src/main/java/com/diegovilla/pos/

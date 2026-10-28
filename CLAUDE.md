@@ -83,7 +83,7 @@ infrastructure ──▶ application ──▶ domain
 - **DTOs**: `record` + `@Schema` + Bean Validation con mensaje.
 - **Mappers**: MapStruct `componentModel = "spring"`; Entity → Model con `default` + `reconstruct`.
 - **Errores**: se lanzan excepciones; los handlers devuelven `ErrorResponseDTO { timestamp, status, error, message, errors[] }` (también 401/403/429).
-- **Persistencia**: el esquema lo define **Flyway** (`V1__init.sql`, `V2__seed_products.sql`…); nunca `ddl-auto=update`. Constraints con nombre (`uk_products_code`) y su `DatabaseExceptionResolver`.
+- **Persistencia**: el esquema lo define **Flyway** (`V1__init.sql`, `V2__seed_products.sql`, `V3__reset_data_and_reseed_products.sql`…); nunca `ddl-auto=update`. Constraints con nombre (`uk_products_code`) y su `DatabaseExceptionResolver`.
 - **Configuración**: toda en `application.properties` (común) + `application-<perfil>.properties`, como task-manager. `local` y `docker` llevan sus valores directamente (son de desarrollo). En `dev` y `prod` los valores sensibles se escriben como `${VARIABLE}` y los resuelve Spring con las variables de entorno de Render: nunca se commitean credenciales reales.
 - **Javadoc** en clases y métodos públicos (`@since 1.0.0`).
 - **`.properties` y caracteres no ASCII**: Spring los lee como ISO-8859-1; escribir tildes como `\u00f3` (p. ej. `L\u00f3pez`).

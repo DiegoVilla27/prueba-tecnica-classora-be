@@ -109,7 +109,8 @@ src/main/resources/
 ├── application-prod.properties       # Neon rama prod: ídem
 └── db/migration/
     ├── V1__init.sql                  # users, products, sales, sale_lines + constraints
-    └── V2__seed_products.sql         # catálogo ficticio (= fixtures MSW del front)
+    ├── V2__seed_products.sql         # primer catálogo (12 productos), reemplazado por V3
+    └── V3__reset_data_and_reseed_products.sql  # vacía ventas, usuarios y productos; 20 productos EAN-13 (= fixtures MSW del front)
 ```
 
 ## 4. Agregado de ejemplo (guía de estilo)

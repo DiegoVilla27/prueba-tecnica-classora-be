@@ -34,8 +34,8 @@ import org.springframework.test.web.servlet.ResultActions;
 @Import(TestcontainersConfiguration.class)
 class CheckoutFlowIT {
 
-    private static final String MILK = "8410001000011";
-    private static final String BAG = "8410001000110";
+    private static final String MILK = "8412345000010";
+    private static final String BAG = "8412345000119";
 
     @Autowired private MockMvc mockMvc;
     @Autowired private UserRepositoryPort userRepositoryPort;

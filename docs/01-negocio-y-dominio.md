@@ -63,7 +63,7 @@ La prueba (Parte 3) pregunta cómo integrarías el front con un backend Java. En
 Los usuarios **no** se registran: el `DatabaseSeeder` crea **un cajero** por entorno con los datos de `seed.cashier.*` en `application-<perfil>.properties` (en dev/prod la contraseña llega como `${SEED_CASHIER_PASSWORD}`).
 
 ### `ProductModel` (feature `product`)
-`id`, `code` (solo dígitos, 4–14, único), `name`, `price` (`BigDecimal` ≥ 0), timestamps. Catálogo cargado por migración Flyway (`V2__seed_products.sql`), idéntico a los fixtures MSW del front.
+`id`, `code` (solo dígitos, 4–14, único), `name`, `price` (`BigDecimal` ≥ 0), timestamps. Catálogo fijo de 20 productos con EAN-13 válidos, cargado por migración Flyway (`V3__reset_data_and_reseed_products.sql`, que sustituye al de `V2`), idéntico a los fixtures MSW del front.
 
 ### `SaleModel` (agregado raíz, feature `sale`)
 | Campo | Regla |
