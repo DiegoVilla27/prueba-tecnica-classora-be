@@ -21,7 +21,7 @@ import jakarta.validation.constraints.Pattern;
 public record SaleAddLineRequestDTO(
         @Schema(
                         description = "Scannable product code",
-                        example = "8410001000011",
+                        example = "8412345000010",
                         requiredMode = REQUIRED)
                 @NotBlank(message = "Code is required")
                 @Pattern(regexp = "^\\d{4,14}$", message = "Code must contain 4 to 14 digits")

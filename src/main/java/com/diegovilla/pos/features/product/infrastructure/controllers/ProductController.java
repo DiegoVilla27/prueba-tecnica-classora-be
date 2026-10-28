@@ -39,7 +39,7 @@ public class ProductController {
     @GetMapping("/{code}")
     @GetProductByCodeDocumentation
     public ResponseEntity<ProductResponseDTO> getByCode(
-            @Parameter(description = "Scannable product code", example = "8410001000011")
+            @Parameter(description = "Scannable product code", example = "8412345000010")
                     @PathVariable
                     @Pattern(regexp = "^\\d{4,14}$", message = "Code must contain 4 to 14 digits")
                     String code) {

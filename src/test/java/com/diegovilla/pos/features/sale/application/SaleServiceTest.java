@@ -36,7 +36,7 @@ import org.springframework.security.access.AccessDeniedException;
 @ExtendWith(MockitoExtension.class)
 class SaleServiceTest {
 
-    private static final String CODE = "8410001000011";
+    private static final String CODE = "8412345000010";
 
     @Mock private SaleRepositoryPort saleRepositoryPort;
     @Mock private ProductRepositoryPort productRepositoryPort;

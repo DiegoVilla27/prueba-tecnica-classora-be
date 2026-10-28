@@ -10,7 +10,7 @@ import lombok.Getter;
  * Domain model representing a catalog product that can be scanned at the checkout.
  *
  * <p>The catalog is read-only for the POS: products are loaded by the Flyway migration {@code
- * V2__seed_products.sql}, so the model only offers {@link #reconstruct}.
+ * V3__reset_data_and_reseed_products.sql}, so the model only offers {@link #reconstruct}.
  *
  * @since 1.0.0
  */

@@ -33,7 +33,7 @@ class PosApplicationIT {
     @Test
     @DisplayName("Should reject protected endpoints without a token with 401")
     void shouldRejectWithoutToken() throws Exception {
-        mockMvc.perform(get("/products/8410001000011"))
+        mockMvc.perform(get("/products/8412345000010"))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.status").value(401));
     }

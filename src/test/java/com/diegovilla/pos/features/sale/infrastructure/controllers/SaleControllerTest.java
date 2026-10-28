@@ -91,9 +91,9 @@ class SaleControllerTest {
     @DisplayName("Should return 200 with the updated sale after line operations")
     void shouldHandleLineOperations() {
         UUID lineId = UUID.randomUUID();
-        SaleAddLineCommand addCommand = new SaleAddLineCommand("8410001000011", 1);
+        SaleAddLineCommand addCommand = new SaleAddLineCommand("8412345000010", 1);
         SaleChangeQuantityCommand changeCommand = new SaleChangeQuantityCommand(3);
-        SaleAddLineRequestDTO addDto = new SaleAddLineRequestDTO("8410001000011", 1);
+        SaleAddLineRequestDTO addDto = new SaleAddLineRequestDTO("8412345000010", 1);
         SaleChangeQuantityRequestDTO changeDto = new SaleChangeQuantityRequestDTO(3);
         when(saleDtoMapper.addLineRequestDTOToCommand(addDto)).thenReturn(addCommand);
         when(saleDtoMapper.changeQuantityRequestDTOToCommand(changeDto)).thenReturn(changeCommand);
