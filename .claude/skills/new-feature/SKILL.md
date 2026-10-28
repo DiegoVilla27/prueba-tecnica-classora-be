@@ -19,11 +19,16 @@ description: Crea una feature backend con arquitectura hexagonal + DDD (domain/a
 7. **application/services/<X>Service**: `@Service @Slf4j @RequiredArgsConstructor @Transactional(readOnly = true)`; `@Transactional` en escrituras; `log.info(...)` por operación.
 8. **infrastructure/entity**, **repository** (`JpaRepository`), **mappers** (`<X>EntityMapper` con `default` + `reconstruct`; `<X>DtoMapper` MapStruct), **adapters** (`<X>RepositoryAdapter implements <X>RepositoryPort`).
 9. **infrastructure/dto** y endpoints con la skill `new-endpoint`.
-10. Tests de service, controller y adapter.
+10. Tests de service, controller y adapter (+ `*IT` si es flujo crítico).
 11. Entrada en `AI_LOG.md` (`update-ai-log`).
 
-## 2. No crear por defecto
-`specifications/`, resolvers de excepciones de BD, `application/dto`, paginación, filtros, seguridad, caché. Solo cuando un caso de uso lo pida.
+## 2. Persistencia y seguridad
+- Tablas y constraints nuevos → nueva migración Flyway `V<n>__<descripcion>.sql` (nunca editar una migración ya aplicada).
+- Constraint con nombre → `<X>DatabaseExceptionResolver`.
+- Endpoints protegidos por defecto; propiedad del recurso con `PermissionValidator` en el service.
 
-## 3. Verificación
+## 3. No crear por defecto
+`specifications/`, `application/dto`, paginación, filtros, caché. Solo cuando un caso de uso lo pida.
+
+## 4. Verificación
 `./mvnw spotless:apply && ./mvnw verify`

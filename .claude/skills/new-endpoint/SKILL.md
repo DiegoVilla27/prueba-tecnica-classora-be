@@ -19,7 +19,8 @@ Debe existir en `docs/02-casos-de-uso.md`. Actualizar la tabla y el JSON en `doc
    @Operation(summary = "...", description = "...")
    @ApiResponse(responseCode = "200", description = "...",
        content = @Content(mediaType = "application/json", schema = @Schema(implementation = XResponseDTO.class)))
-   @BadRequestApiResponse @NotFoundApiResponse @InternalServerErrorApiResponse
+   @BadRequestApiResponse @UnauthorizedApiResponse @ForbiddenApiResponse @NotFoundApiResponse
+   @TooManyRequestsApiResponse @InternalServerErrorApiResponse
    public @interface OpXDocumentation {}
    ```
    Solo las respuestas que el endpoint puede devolver de verdad.
@@ -32,8 +33,9 @@ Debe existir en `docs/02-casos-de-uso.md`. Actualizar la tabla y el JSON en `doc
        return ResponseEntity.ok(saleDtoMapper.modelToResponseDTO(sale));
    }
    ```
-   201 al crear (+ `Location`), 200 en el resto. Errores **siempre** por excepción.
-7. **Tests**: `ServiceTest` (happy + cada excepción) y `ControllerTest` (status + body).
+   201 al crear (+ `Location`), 204 en transiciones sin cuerpo, 200 en el resto. Errores **siempre** por excepción.
+7. **Seguridad**: sin roles ni `@PreAuthorize`; todo endpoint requiere sesión por defecto. Si el recurso tiene dueño, `PermissionValidator` en el service. Si es público, añadirlo a `permitAll` en `SecurityConfig` y justificarlo.
+8. **Tests**: `ServiceTest` (happy + cada excepción, incluido 403), `ControllerTest` (status + body) y el `*IT` del flujo si es crítico.
 
 ## 3. Verificación
 Swagger muestra el endpoint con ejemplos; `./mvnw verify` en verde; entrada en `AI_LOG.md`.

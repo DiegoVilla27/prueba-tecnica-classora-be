@@ -1,6 +1,6 @@
 ---
 name: write-tests
-description: Escribe tests backend al estilo task-manager (dominio sin mocks, service/controller/adapter con Mockito, AssertJ, @DisplayName "Should …"). Usar al añadir o cambiar comportamiento.
+description: Escribe tests backend al estilo task-manager (dominio sin mocks, service/controller/adapter con Mockito, integración con Testcontainers, AssertJ, @DisplayName "Should …"). Usar al añadir o cambiar comportamiento.
 ---
 
 # write-tests (backend)
@@ -12,7 +12,8 @@ description: Escribe tests backend al estilo task-manager (dominio sin mocks, se
 | Service | `<X>ServiceTest`: `@ExtendWith(MockitoExtension.class)`, `@Mock` puertos, `@InjectMocks` service; happy path + cada excepción |
 | Controller | `<X>ControllerTest`: mocks de service y mapper; status y body |
 | Adapter | `<X>RepositoryAdapterTest`: mapeo entity ⇄ model |
-| Core (errores) | test del handler/factory tocado |
+| Core (errores, JWT, rate limit, permisos) | test del componente tocado |
+| Flujo crítico (auth, lookup de producto, checkout, permisos) | `*IT`: `@SpringBootTest` + MockMvc + PostgreSQL en Testcontainers + Flyway real |
 
 ## Plantilla
 ```java
@@ -20,7 +21,7 @@ description: Escribe tests backend al estilo task-manager (dominio sin mocks, se
 @DisplayName("Should increase quantity when the same product is added again")
 void shouldIncreaseQuantityWhenSameProductAdded() {
     ProductModel milk = ProductModel.create("8410001000011", "Leche entera 1L", new BigDecimal("0.95"));
-    SaleModel sale = SaleModel.create();
+    SaleModel sale = SaleModel.create(UUID.randomUUID());
 
     sale.addProduct(milk, 1);
     sale.addProduct(milk, 2);

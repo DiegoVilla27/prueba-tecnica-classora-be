@@ -1,27 +1,50 @@
 # 04 · API REST, contratos, errores y OpenAPI
 
-Base: `http://localhost:8080/api/v1` · Swagger UI: `/api/v1/api-docs/swagger-ui.html` · Spec JSON: `/api/v1/api-docs`
-Sin autenticación (fuera de alcance; ver `06-roadmap.md`). CORS: `http://localhost:[*]`.
+| Entorno | Base URL | Swagger |
+|---|---|---|
+| local / docker | `http://localhost:8080/api/v1` | `/api/v1/api-docs/swagger-ui.html` |
+| dev | `https://<pos-api-dev>.onrender.com/api/v1` | ídem |
+| prod | `https://<pos-api-prod>.onrender.com/api/v1` | ídem |
+
+Auth: `Authorization: Bearer <accessToken>` salvo `/auth/**`, `/api-docs/**` y `/actuator/health`.
 
 ## 1. Endpoints
 
-| Método | Ruta | Body | Respuestas |
-|---|---|---|---|
-| GET | `/products/{code}` ⭐ | — | 200 `ProductResponseDTO` · 400 · 404 · 500 |
-| POST | `/sales` | — | 201 `SaleResponseDTO` + `Location` |
-| GET | `/sales/{id}` | — | 200 · 404 |
-| POST | `/sales/{id}/lines` | `{ code, quantity }` | 200 venta · 400 · 404 · 409 · 422 |
-| PATCH | `/sales/{id}/lines/{lineId}` | `{ quantity }` | 200 venta · 400 · 404 · 409 · 422 |
-| DELETE | `/sales/{id}/lines/{lineId}` | — | 200 venta · 404 · 409 |
-| PATCH | `/sales/{id}/complete` | — | 200 venta · 404 · 409 · 422 |
+| Método | Ruta | Auth | Body | Respuestas |
+|---|---|---|---|---|
+| POST | `/auth/login` | público | `{ email, password }` | 200 · 400 · 401 · 429 |
+| POST | `/auth/refresh` | público | `{ refreshToken }` | 200 · 400 · 401 |
+| GET | `/users/me` | ✅ | — | 200 · 401 |
+| GET | `/products/{code}` ⭐ | ✅ | — | 200 · 400 · 401 · 404 · 429 |
+| POST | `/sales` | ✅ | — | 201 + `Location` · 401 · 409 |
+| GET | `/sales/current` | ✅ | — | 200 · 401 · 404 |
+| GET | `/sales/{id}` | ✅ (suya) | — | 200 · 401 · 403 · 404 |
+| POST | `/sales/{id}/lines` | ✅ (suya) | `{ code, quantity }` | 200 · 400 · 401 · 403 · 404 · 409 · 422 |
+| PATCH | `/sales/{id}/lines/{lineId}` | ✅ (suya) | `{ quantity }` | 200 · 400 · 401 · 403 · 404 · 409 · 422 |
+| DELETE | `/sales/{id}/lines/{lineId}` | ✅ (suya) | — | 200 · 401 · 403 · 404 · 409 |
+| PATCH | `/sales/{id}/complete` | ✅ (suya) | — | 200 · 401 · 403 · 404 · 409 · 422 |
+| PATCH | `/sales/{id}/cancel` | ✅ (suya) | — | 204 · 401 · 403 · 404 · 409 |
+| GET | `/actuator/health` | público | — | 200 |
+
+✅ = requiere `Bearer`; (suya) = la venta debe pertenecer al cajero autenticado, si no 403.
 
 ## 2. Contratos
 
+### `AuthResponseDTO`
+```json
+{ "accessToken": "eyJ…", "refreshToken": "eyJ…", "tokenType": "Bearer", "expiresIn": 3600 }
+```
+
+### `UserMeResponseDTO`
+```json
+{ "id": "…", "firstName": "Ana", "lastName": "López", "email": "cajero@pos.demo" }
+```
+
 ### `ProductResponseDTO`
 ```json
-{ "id": "6f1c1a7e-0b7a-4c55-9a0e-2b3f6c1d9e10", "code": "8410001000011", "name": "Leche entera 1L", "price": 0.95 }
+{ "id": "6f1c1a7e-…", "code": "8410001000011", "name": "Leche entera 1L", "price": 0.95 }
 ```
-`price` como número decimal (`spring.jackson.generator.write-bigdecimal-as-plain=true`). El front lo pasa a céntimos en su mapper.
+`price` decimal plano (`spring.jackson.generator.write-bigdecimal-as-plain=true`); el front lo pasa a céntimos.
 
 ### `SaleAddLineRequestDTO`
 ```java
@@ -38,22 +61,21 @@ public record SaleAddLineRequestDTO(
         Integer quantity) {}
 ```
 
-### `SaleUpdateLineRequestDTO`
-`{ "quantity": 3 }` con las mismas validaciones de cantidad.
-
 ### `SaleResponseDTO`
 ```json
 {
   "id": "0d9f…",
   "status": "OPEN",
+  "cashierId": "…",
   "lines": [
     { "id": "…", "productId": "…", "code": "8410001000011", "name": "Leche entera 1L",
       "unitPrice": 0.95, "quantity": 2, "subtotal": 1.90 }
   ],
   "itemCount": 2,
   "total": 1.90,
+  "version": 3,
   "createdAt": "2026-10-28T14:30:00Z",
-  "completedAt": null
+  "closedAt": null
 }
 ```
 
@@ -71,35 +93,39 @@ public record SaleAddLineRequestDTO(
 
 | Origen | Handler | HTTP |
 |---|---|---|
-| Bean Validation (`@Valid`, `@Pattern` en `@PathVariable`), JSON malformado, UUID inválido | `SpringExceptionHandler` | 400 (con `errors[]` si aplica) |
-| `ResourceNotFoundException` y subclases (`ProductNotFoundException`, `SaleNotFoundException`, `SaleLineNotFoundException`) | `ApiExceptionHandler` | 404 |
-| `SaleNotOpenException` | `ApiExceptionHandler` | 409 |
-| `DomainException` y subclases (`EmptySaleException`, `InvalidQuantityException`) | `ApiExceptionHandler` | 422 |
-| Cualquier otra | `SpringExceptionHandler` (fallback, sin stacktrace, log `error`) | 500 |
+| Bean Validation, JSON malformado, UUID inválido | `SpringExceptionHandler` | 400 |
+| Token ausente/inválido/expirado, credenciales incorrectas | `SpringExceptionHandler` (vía `HandlerExceptionResolver` de `SecurityConfig`) | 401 |
+| Venta de otro cajero | `PermissionValidator` | 403 |
+| `ResourceNotFoundException` y subclases | `ApiExceptionHandler` | 404 |
+| `SaleNotOpenException`, `OpenSaleAlreadyExistsException`, `ObjectOptimisticLockingFailureException`, constraints | `ApiExceptionHandler` / `SpringExceptionHandler` / `DatabaseExceptionTranslator` | 409 |
+| `DomainException` y subclases | `ApiExceptionHandler` | 422 |
+| Bucket agotado | `RateLimitingFilter` | 429 + `Retry-After` |
+| Cualquier otra | `SpringExceptionHandler` (sin stacktrace, log `error`) | 500 |
 
 ## 4. ⭐ Respuesta para la entrevista: "endpoint para consultar un producto por código"
-1. **Ruta**: `GET /api/v1/products/{code}`. Recurso identificado por su clave natural de negocio; GET es idempotente y cacheable por HTTP.
-2. **Validación**: `@Pattern("^\\d{4,14}$")` en el path → 400 con el detalle del campo, sin tocar la BD.
-3. **200**: DTO mínimo para la caja (`id`, `code`, `name`, `price`). Nunca la entidad JPA (no se filtra el modelo de persistencia).
-4. **404** con `ErrorResponseDTO` si no existe → el front muestra "No existe ningún producto con el código…".
-5. **500** genérico ante fallos técnicos, sin detalles internos; se registra con traza.
-6. **Rendimiento**: índice único en `code` (búsqueda O(log n)).
-7. **Capas**: `ProductController` → `ProductService.getByCode` → `ProductRepositoryPort` → `ProductRepositoryAdapter` (JPA). El dominio no sabe de HTTP ni de JPA.
-8. **Documentación**: `@GetProductByCodeDocumentation` con ejemplos 200/400/404/500.
-9. **Tests**: `ProductServiceTest` (encontrado / no encontrado), `ProductControllerTest`, `ProductRepositoryAdapterTest`.
-10. **Si escalara** (se menciona, no se implementa): JWT y roles, rate limiting, caché (Caffeine/Redis) e invalidación al editar precios. Todo ya resuelto en task-manager.
+1. **Ruta**: `GET /api/v1/products/{code}`: recurso por su clave natural de negocio; GET idempotente.
+2. **Seguridad**: requiere JWT de cajero; rate limiting; CORS solo para el front.
+3. **Validación**: `@Pattern("^\\d{4,14}$")` en el path → 400 con detalle del campo, sin tocar BD.
+4. **200**: DTO mínimo (`id`, `code`, `name`, `price`), nunca la entidad JPA.
+5. **404** con `ErrorResponseDTO` si no existe → el front lo muestra inline junto al input.
+6. **500** genérico sin detalles internos; log con traza.
+7. **Rendimiento**: índice único en `code`.
+8. **Capas**: `ProductController` → `ProductService.getByCode` → `ProductRepositoryPort` → `ProductRepositoryAdapter` (JPA).
+9. **Documentación**: `@GetProductByCodeDocumentation` con ejemplos 200/400/401/404/429/500.
+10. **Tests**: service, controller, adapter + `ProductLookupIT` (Testcontainers).
+11. **Siguiente paso si escalara**: caché (Caffeine/Redis) con invalidación al cambiar precios.
 
 ## 5. OpenAPI (estilo task-manager)
-- `OpenApiConfig`: info, contacto, licencia, servidor local. Sin esquema de seguridad.
-- `core/openapi/common/*ApiResponse`: meta-anotaciones con ejemplo de `ErrorResponseDTO` por status.
-- Una anotación por endpoint en `infrastructure/docs`:
+- `OpenApiConfig`: info, contacto, licencia, servidores (local, dev, prod) y esquema `Bearer Authentication`.
+- `core/openapi/common/*ApiResponse`: meta-anotaciones con ejemplo de `ErrorResponseDTO`.
+- Una anotación por endpoint en `infrastructure/docs`, por ejemplo:
 ```java
 @Target(ElementType.METHOD) @Retention(RetentionPolicy.RUNTIME) @Documented
 @Operation(summary = "Get product by code",
            description = "Retrieves a product by its scannable code. Used by the checkout on every scan.")
 @ApiResponse(responseCode = "200", description = "Product found.",
     content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProductResponseDTO.class)))
-@BadRequestApiResponse @NotFoundApiResponse @InternalServerErrorApiResponse
+@BadRequestApiResponse @UnauthorizedApiResponse @NotFoundApiResponse
+@TooManyRequestsApiResponse @InternalServerErrorApiResponse
 public @interface GetProductByCodeDocumentation {}
 ```
-- DTOs con `@Schema` en cada campo; `springdoc.swagger-ui.operationsSorter=method`.
