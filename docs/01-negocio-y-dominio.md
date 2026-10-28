@@ -104,7 +104,7 @@ sale.total(); sale.itemCount();
 | RN-07 | Código: solo dígitos, 4–14 | `@Pattern` | 400 |
 | RN-08 | Un cajero tiene como máximo **una** venta `OPEN` | `SaleService.open` + índice parcial único | `OpenSaleAlreadyExistsException` 409 |
 | RN-09 | Un cajero solo opera **sus** ventas | `PermissionValidator` | 403 |
-| RN-10 | Edición concurrente de la misma venta | `@Version` | 409 |
+| RN-10 | Edición concurrente de la misma venta | `@Version` + `uk_sale_lines_sale_product` (dos escaneos simultáneos de un producto nuevo) | 409 |
 
 ## 6. Glosario (compartido con el front)
 Venta (Sale) · Línea (SaleLine) · Producto (Product) · Código · Escanear · Finalizar (complete) · Cancelar/Vaciar (cancel) · Subtotal/Importe · Total · Cajero (usuario del sistema).

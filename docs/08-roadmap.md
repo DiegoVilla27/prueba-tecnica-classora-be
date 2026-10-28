@@ -24,11 +24,11 @@ Se trabaja primero el backend completo y desplegado; después el front lo consum
 - [x] `V2__seed_products.sql` (= fixtures del front).
 - [x] Tests + `ProductLookupIT`.
 
-## Hito 4 · `sale` — ~4 h
-- [ ] `SaleModel`, `SaleLine`, `SaleStatus`, `Quantity`, excepciones + `SaleModelTest`.
-- [ ] Service con permisos, puerto, adapter (`@EntityGraph`, `@Version`), resolver de constraints.
-- [ ] 8 endpoints + docs.
-- [ ] Tests + `CheckoutFlowIT`.
+## Hito 4 · `sale` ✅
+- [x] `SaleModel`, `SaleLine`, `SaleStatus`, `Quantity`, excepciones + `SaleModelTest`.
+- [x] Service con permisos, puerto, adapter (`@EntityGraph`, `@Version`), resolver de constraints.
+- [x] 8 endpoints + docs.
+- [x] Tests + `CheckoutFlowIT`.
 
 ## Hito 5 · CI/CD y despliegue — ~2 h
 - [ ] Workflow `ci-cd.yml` (quality → test → deploy).

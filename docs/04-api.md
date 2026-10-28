@@ -97,7 +97,7 @@ public record SaleAddLineRequestDTO(
 | Token ausente/inválido/expirado, credenciales incorrectas | `SpringExceptionHandler` (vía `HandlerExceptionResolver` de `SecurityConfig`) | 401 |
 | Venta de otro cajero | `PermissionValidator` | 403 |
 | `ResourceNotFoundException` y subclases | `ApiExceptionHandler` | 404 |
-| `SaleNotOpenException`, `OpenSaleAlreadyExistsException`, `ObjectOptimisticLockingFailureException`, constraints | `ApiExceptionHandler` / `SpringExceptionHandler` / `DatabaseExceptionTranslator` | 409 |
+| `SaleNotOpenException`, `OpenSaleAlreadyExistsException`, `ObjectOptimisticLockingFailureException`, constraints (`ux_sales_one_open_per_cashier`, `uk_sale_lines_sale_product` → `SaleDatabaseExceptionResolver`) | `ApiExceptionHandler` / `SpringExceptionHandler` / `DatabaseExceptionTranslator` | 409 |
 | `DomainException` y subclases | `ApiExceptionHandler` | 422 |
 | Bucket agotado | `RateLimitingFilter` | 429 + `Retry-After` |
 | Cualquier otra | `SpringExceptionHandler` (sin stacktrace, log `error`) | 500 |

@@ -15,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.AuthenticationException;
@@ -314,6 +315,26 @@ public class SpringExceptionHandler {
         return errorResponseFactory.build(
                 HttpStatus.FORBIDDEN,
                 "You do not have permission to access this resource.",
+                List.of());
+    }
+
+    /**
+     * Handles optimistic-locking conflicts (RN-10).
+     *
+     * <p>Thrown when two requests modify the same resource at the same time and the second one
+     * works on a stale {@code @Version}.
+     *
+     * @param e exception raised by JPA on a stale version.
+     * @return HTTP 409 response asking the client to reload the resource.
+     */
+    @ExceptionHandler(ObjectOptimisticLockingFailureException.class)
+    public ResponseEntity<ErrorResponseDTO> handleOptimisticLockingFailureException(
+            ObjectOptimisticLockingFailureException e) {
+        log.warn("Optimistic locking conflict: {}", e.getMessage());
+
+        return errorResponseFactory.build(
+                HttpStatus.CONFLICT,
+                "The resource was modified by another request. Reload it and try again.",
                 List.of());
     }
 

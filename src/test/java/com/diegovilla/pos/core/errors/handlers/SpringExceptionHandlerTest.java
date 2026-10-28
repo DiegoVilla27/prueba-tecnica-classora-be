@@ -28,6 +28,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.AuthenticationException;
@@ -237,6 +238,18 @@ class SpringExceptionHandlerTest {
                 .thenReturn(dummyResponse);
 
         ResponseEntity<ErrorResponseDTO> res = handler.handleAccessDeniedException(ex);
+        assertThat(res).isEqualTo(dummyResponse);
+    }
+
+    @Test
+    @DisplayName("Should handle ObjectOptimisticLockingFailureException as 409")
+    void shouldHandleOptimisticLockingFailureException() {
+        ObjectOptimisticLockingFailureException ex =
+                new ObjectOptimisticLockingFailureException("SaleEntity", "id");
+        when(errorResponseFactory.build(eq(HttpStatus.CONFLICT), any(), any()))
+                .thenReturn(dummyResponse);
+
+        ResponseEntity<ErrorResponseDTO> res = handler.handleOptimisticLockingFailureException(ex);
         assertThat(res).isEqualTo(dummyResponse);
     }
 

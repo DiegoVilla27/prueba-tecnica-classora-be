@@ -236,3 +236,44 @@ Registro del uso de inteligencia artificial en el backend. Complementa la **Part
 - **Qué hizo la IA:** Commit `feat(product): add product lookup by code with seeded catalog` en `main` y push a `origin/main`.
 - **Decisiones / correcciones humanas:** Ninguna.
 - **Resultado:** Hito 3 publicado en `origin/main`.
+
+### #17 · 2026-10-28 20:42 · Hito 4: feature sale (agregado de la venta y 8 endpoints)
+- **Herramienta:** Claude Code (Claude Opus 5.5)
+- **Prompt (resumen):** Empezar el hito 4.
+- **Qué hizo la IA:**
+  - **Dominio:**
+    - `SaleModel` (agregado raíz) con `addProduct`, `changeQuantity`, `removeLine`, `complete`, `cancel`, `total` e `itemCount` derivados.
+    - `SaleLine` guarda una copia del código, nombre y precio del producto al escanearlo; solo el agregado puede cambiar su cantidad.
+    - Value objects `Quantity` (1–999, con `plus`) y `SaleStatus`.
+    - Excepciones: `InvalidQuantityException` y `EmptySaleException` (422); `SaleNotOpenException`, `OpenSaleAlreadyExistsException` y `ConcurrentSaleModificationException` (409); `SaleNotFoundException` y `SaleLineNotFoundException` (404).
+  - **Aplicación:** `SaleService` con los 8 casos de uso, propiedad de la venta con `PermissionValidator` y uso de `ProductRepositoryPort` para resolver el código escaneado.
+  - **Infraestructura:**
+    - `SaleEntity`/`SaleLineEntity` con `@Version`, `cascade` + `orphanRemoval`, `position` para el orden y `@EntityGraph` en las lecturas.
+    - `SaleRepositoryAdapter` y `SaleDatabaseExceptionResolver`.
+    - DTOs validados, `SaleDtoMapper`, `SaleController` (201 + `Location`, 204 al cancelar) y una anotación OpenAPI por endpoint.
+  - **Core:** handler 409 para `ObjectOptimisticLockingFailureException`.
+  - **Tests:** `SaleModelTest`, `QuantityTest`, `SaleServiceTest`, `SaleControllerTest`, `SaleRepositoryAdapterTest`, `SaleDatabaseExceptionResolverTest`, el test del handler y `CheckoutFlowIT`. Este último cubre el flujo completo de una venta, 409/422/404/400, la venta vacía, el cancelar dos veces, el 403 con un segundo cajero y el 401.
+  - **Docs:** roadmap (hito 4 ✅), RN-10 y tabla de errores.
+- **Corrección detectada en la prueba manual:**
+  - 20 escaneos simultáneos de un producto que aún no estaba en la venta devolvían 7 × 500. El `INSERT` de la línea choca con `uk_sale_lines_sale_product` antes de que se compruebe la versión.
+  - Se tradujo esa constraint a `ConcurrentSaleModificationException` (409). Tras el cambio: 3 × 200 y 17 × 409, sin 500; 10 `open` simultáneos dan 1 × 201 y 9 × 409. En ningún caso se pierden unidades.
+  - `getFirst()` (Java 21) se cambió por `get(0)` en los tests, ya que el proyecto compila a Java 17.
+- **Verificación:**
+  - `./mvnw verify`: 107 unit + 17 IT en verde, JaCoCo y Spotless OK.
+  - Manual contra `global_postgres`: los 8 endpoints, `Location` correcta, total `2.20` con la bolsa de 0,10 € y las 7 rutas en Swagger.
+- **Decisiones / correcciones humanas:** Ninguna.
+- **Resultado:** Hito 4 completado; sin commit.
+
+### #18 · 2026-10-28 21:05 · Explicación de líneas y endpoints
+- **Herramienta:** Claude Code (Claude Opus 5.5)
+- **Prompt (resumen):** Explicar qué es una línea de venta, qué hace cada endpoint y qué falta del back.
+- **Qué hizo la IA:** Explicó venta/línea/total con un ticket de ejemplo, recorrió los endpoints siguiendo a un cliente en caja y la tabla de errores; resumió lo pendiente (commit del hito 4, hito 5 de despliegue, hito 6 de entrega).
+- **Decisiones / correcciones humanas:** Ninguna.
+- **Resultado:** Sin cambios de código.
+
+### #19 · 2026-10-28 21:08 · Commit y push del hito 4
+- **Herramienta:** Claude Code (Claude Opus 5.5)
+- **Prompt (resumen):** Hacer commit y push.
+- **Qué hizo la IA:** Comprobó Spotless y commit `feat(sale): add sale aggregate with checkout endpoints` en `main` con push a `origin/main`.
+- **Decisiones / correcciones humanas:** Ninguna.
+- **Resultado:** Hito 4 publicado en `origin/main`.
