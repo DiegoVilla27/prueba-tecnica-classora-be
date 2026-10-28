@@ -160,3 +160,51 @@ Registro del uso de inteligencia artificial en el backend. Complementa la **Part
   - Commit y push del hito 1 en `main`.
 - **Decisiones / correcciones humanas:** El autor acepta mantener Flyway.
 - **Resultado:** Hito 1 publicado en `origin/main`.
+
+### #12 · 2026-10-28 16:36 · Hito 2: features user y auth
+- **Herramienta:** Claude Code (Claude Opus 5.5)
+- **Prompt (resumen):** Empezar el hito 2 (user + auth).
+- **Qué hizo la IA:**
+  - Feature `user`, portada de task-manager y simplificada:
+    - `UserModel` sin roles, con `create` validado y `reconstruct`;
+    - `UserNotFoundException`;
+    - puertos `UserRepositoryPort` y `PasswordHasherPort`, `UserService.getMe`;
+    - entity, repository y mappers MapStruct;
+    - adaptadores JPA y BCrypt;
+    - `GET /users/me` con `@GetUserMeDocumentation`.
+  - `utils/data/ValidateDataUtils`, solo con los métodos usados.
+  - `core/seeders`: `DatabaseSeeder` idempotente + `SeedCashierProperties` (`seed.cashier.*`).
+  - Feature `auth`:
+    - `POST /auth/login` (401 genérico "Invalid credentials.");
+    - `POST /auth/refresh` (valida el tipo de token y que el cajero exista);
+    - DTOs en camelCase con `tokenType`;
+    - docs OpenAPI públicas (`@SecurityRequirements` vacío).
+  - Tests: `UserModelTest`, `ValidateDataUtilsTest`, `UserServiceTest`, `UserControllerTest`, `UserRepositoryAdapterTest`, `BCryptPasswordHasherAdapterTest`, `AuthServiceTest`, `AuthControllerTest` y `AuthIT` (login, `/users/me`, 401, 400 y refresh).
+- **Corrección detectada en la prueba manual:** Spring lee los `.properties` como ISO-8859-1, así que "López" llegaba como "LÃ³pez". Se escribió como `López`, se borró y re-sembró el cajero local, y se añadió la regla a `CLAUDE.md`.
+- **Verificación:**
+  - `./mvnw verify`: 56 unit + 8 IT en verde; JaCoCo cumple.
+  - Manual contra `global_postgres`: login del cajero demo, `/users/me` con datos correctos y 401 con contraseña errónea.
+- **Decisiones / correcciones humanas:** Ninguna.
+- **Resultado:** Hito 2 completado; sin commit.
+
+### #13 · 2026-10-28 19:49 · Alineación de versiones de Java y Spring Boot con task-manager
+- **Herramienta:** Claude Code (Claude Opus 5.5)
+- **Prompt (resumen):** El autor pregunta si el proyecto usa el mismo JDK y SDK que task-manager.
+- **Qué hizo la IA:**
+  - Comparó el `pom.xml`, el Maven wrapper y el `Dockerfile` de task-manager con los de este repo.
+  - Encontró dos diferencias introducidas en el hito 1: `java.version` 21 (task-manager: 17) y Spring Boot 4.1.1 (task-manager: 4.1.0).
+  - Las alineó en el `pom.xml` y actualizó `README.md`, `CLAUDE.md` y `docs/08-roadmap.md`.
+  - Coincidían ya: Maven 3.9.16 (wrapper 3.3.4), imágenes Docker Temurin 21 y el resto de librerías (Lombok, MapStruct, springdoc, jjwt, Bucket4j, Spotless, JaCoCo).
+- **Verificación:** `./mvnw verify` en verde (56 unit + 8 IT, JaCoCo y Spotless OK); el bytecode generado es Java 17 (major 61).
+- **Decisiones / correcciones humanas:** El autor detectó la discrepancia de versiones.
+- **Resultado:** Versiones iguales a task-manager; sin commit.
+
+### #14 · 2026-10-28 19:59 · Commit y push del hito 2
+- **Herramienta:** Claude Code (Claude Opus 5.5)
+- **Prompt (resumen):** Hacer commit y push y decir con qué se sigue.
+- **Qué hizo la IA:** Dos commits en `main` con Conventional Commits:
+  - `build: align java and spring boot versions with task-manager`;
+  - `feat(auth): add cashier login, token refresh and /users/me`.
+  Después hizo push a `origin/main` y propuso el hito 3 (feature `product`).
+- **Decisiones / correcciones humanas:** Ninguna.
+- **Resultado:** Hito 2 publicado en `origin/main`.
