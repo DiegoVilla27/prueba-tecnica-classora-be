@@ -30,15 +30,15 @@ Se trabaja primero el backend completo y desplegado; después el front lo consum
 - [x] 8 endpoints + docs.
 - [x] Tests + `CheckoutFlowIT`.
 
-## Hito 5 · CI/CD y despliegue
+## Hito 5 · CI/CD y despliegue ✅
 - [x] Workflow `ci-cd.yml` (static-checks → unit / IT / docker build → quality-gate → deploy).
 - [x] Neon (ramas `dev`/`prod`), Render (`pos-api-dev`/`pos-api-prod`), secrets.
-- [ ] Rama `dev` + protección de ramas.
+- [x] Rama `dev` + protección de ramas (`main` y `dev`: PR obligatorio y check `🛡️ Backend CI Quality Gate`, también para admins).
 - [x] Smoke test en dev y prod: login → escanear → finalizar (total 2,20 €), 404 por código desconocido, 401 sin token, Swagger 200.
 
-## Hito 6 · Entrega
-- [ ] README estilo task-manager: badges, arquitectura, entornos con URLs, credenciales demo, comandos, Docker, CI/CD.
-- [ ] `AI_LOG.md` revisado.
+## Hito 6 · Entrega ✅
+- [x] README estilo task-manager: badges, arquitectura, entornos con URLs, credenciales demo, comandos, Docker, CI/CD.
+- [x] `AI_LOG.md` revisado (numeración continua y sin credenciales).
 
 ---
 

@@ -322,3 +322,31 @@ Registro del uso de inteligencia artificial en el backend. Complementa la **Part
 - **Decisiones / correcciones humanas:** El usuario configuró Neon, Render y los secrets con valores simples (entorno efímero).
 - **Pendiente:** Protección de ramas en GitHub, que se hizo después con `gh` (ver #25).
 - **Resultado:** dev y prod funcionando; workflow y docs sin commit.
+
+### #25 · 2026-10-28 22:45 · Push del hito 5, CI en GitHub y protección de ramas
+- **Herramienta:** Claude Code (Claude Opus 5.5)
+- **Prompt (resumen):** El usuario apagó el Auto-Deploy de Render, insistió en que GitHub estaba conectado e instaló y autenticó `gh`.
+- **Qué hizo la IA:**
+  - Comprobó los conectores de la sesión: no había ninguno de GitHub, solo git con el Llavero de macOS. No usó el token del Llavero.
+  - Hizo el commit `ci: add ci-cd workflow with render deploy hooks`, el push a `main` y puso `dev` en el mismo commit.
+  - Siguió los dos runs: todos los jobs en verde (static, unit + JaCoCo, IT con Testcontainers, Docker, quality gate y deploy a Render); el health de dev y prod da 200 tras el deploy.
+  - Protegió `main` y `dev` con `gh api`: PR obligatorio (0 aprobaciones), check `🛡️ Backend CI Quality Gate`, aplicado también a admins, sin force-push ni borrado.
+- **Decisiones / correcciones humanas:** El usuario eligió instalar `gh` para que la IA configurara la protección.
+- **Resultado:** Hito 5 completado. Desde ahora todo cambio entra por PR (`feature/*` → `dev` → `main`); este cierre de docs y AI_LOG queda sin commit.
+
+### #26 · 2026-10-28 23:05 · Hito 6: README final y cierre del backend
+- **Herramienta:** Claude Code (Claude Opus 5.5)
+- **Prompt (resumen):** Hacer el hito 6 (entrega del back).
+- **Qué hizo la IA:**
+  - **README** con el estilo del de task-manager:
+    - badges (incluido el estado del CI) y tabla de entornos con URLs, Swagger, base de datos y cajero demo;
+    - aviso del arranque en frío y prueba rápida en Swagger;
+    - qué es una venta y una línea, endpoints y errores;
+    - diagrama de secuencia de un escaneo, decisiones de arquitectura y árbol de paquetes;
+    - perfiles y variables de Render, comandos, tests, CI/CD y uso de IA.
+  - Comprobó el README contra el código: el diagrama tenía el rate limit antes del filtro JWT y en `SecurityConfig` va después; se corrigió.
+  - **Revisión del `AI_LOG.md`:** numeración continua del #01 al #26 y `git grep` sin contraseñas ni hosts de Neon.
+  - **Roadmap:** hitos 5 y 6 ✅.
+  - Primer cambio por el flujo protegido: rama `feature/hito-6-entrega` → PR a `dev` → PR a `main`.
+- **Decisiones / correcciones humanas:** Ninguna.
+- **Resultado:** Backend terminado y documentado.
