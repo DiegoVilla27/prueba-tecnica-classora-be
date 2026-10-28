@@ -1,0 +1,194 @@
+name: CI/CD Backend (Spring Boot)
+
+on:
+  push:
+    branches:
+      - dev
+      - main
+
+  pull_request:
+    branches:
+      - dev
+      - main
+
+  workflow_dispatch:
+
+concurrency:
+  group: ci-cd-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ============================================================
+  # 1. FAST-FAIL STATIC QUALITY GATE
+  # ============================================================
+  static-checks:
+    name: ⚡ Fast-Fail Quality Gate (Format & Compile)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🛡️ Verify PR source branch
+        if: github.base_ref == 'main' && github.head_ref != 'dev'
+        env:
+          SOURCE_BRANCH: ${{ github.head_ref }}
+        run: |
+          echo "❌ ERROR: No está permitido hacer Pull Request a 'main' desde '$SOURCE_BRANCH'."
+          echo "👉 Todo cambio hacia 'main' debe provenir obligatoriamente de 'dev'."
+          exit 1
+
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: ☕ Set up OpenJDK 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+
+      - name: 🔑 Make Maven Wrapper Executable
+        run: chmod +x ./mvnw
+
+      - name: 🎨 Spotless Format Check
+        run: ./mvnw -B spotless:check
+
+      - name: ⚙️ Compile Java Code
+        run: ./mvnw -B clean compile
+
+  # ============================================================
+  # 2. UNIT TESTS
+  # ============================================================
+  unit-tests:
+    name: 🧪 Unit Tests & JaCoCo Coverage
+    needs: static-checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: ☕ Set up OpenJDK 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+
+      - name: 🔑 Make Maven Wrapper Executable
+        run: chmod +x ./mvnw
+
+      - name: 🧪 Run Unit Tests & Check Coverage (≥ 80 % domain/application)
+        run: ./mvnw -B test jacoco:check@check-coverage
+
+      - name: 📤 Upload JaCoCo Coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-jacoco
+          path: target/site/jacoco/
+          retention-days: 7
+
+  # ============================================================
+  # 3. INTEGRATION TESTS
+  # ============================================================
+  integration-tests:
+    name: 🔗 Integration Tests (Testcontainers)
+    needs: static-checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: ☕ Set up OpenJDK 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+
+      - name: 🔑 Make Maven Wrapper Executable
+        run: chmod +x ./mvnw
+
+      - name: 🔗 Run Integration Tests (*IT)
+        run: ./mvnw -B test-compile failsafe:integration-test failsafe:verify
+
+  # ============================================================
+  # 4. PRODUCTION BUILD (same Dockerfile Render builds)
+  # ============================================================
+  build:
+    name: 📦 Build Docker Image
+    needs: static-checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: 📦 Build Production Image
+        run: docker build -t pos-api:${{ github.sha }} .
+
+  # ============================================================
+  # 5. FINAL CI QUALITY GATE
+  # ============================================================
+  quality-gate:
+    name: 🛡️ Backend CI Quality Gate
+    needs:
+      - static-checks
+      - unit-tests
+      - integration-tests
+      - build
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🛡️ Evaluate CI Results
+        env:
+          STATIC_RESULT: ${{ needs.static-checks.result }}
+          UNIT_RESULT: ${{ needs.unit-tests.result }}
+          INTEGRATION_RESULT: ${{ needs.integration-tests.result }}
+          BUILD_RESULT: ${{ needs.build.result }}
+        run: |
+          echo "=========================================="
+          echo "🛡️ Backend CI Quality Gate"
+          echo "=========================================="
+          echo "Static:       $STATIC_RESULT"
+          echo "Unit:         $UNIT_RESULT"
+          echo "Integration:  $INTEGRATION_RESULT"
+          echo "Build:        $BUILD_RESULT"
+          echo "=========================================="
+
+          for result in "$STATIC_RESULT" "$UNIT_RESULT" "$INTEGRATION_RESULT" "$BUILD_RESULT"; do
+            if [[ "$result" != "success" ]]; then
+              echo "❌ Backend CI Quality Gate FAILED."
+              exit 1
+            fi
+          done
+
+          echo "✅ BACKEND CI QUALITY GATE PASSED"
+
+  # ============================================================
+  # 6. CONTINUOUS DEPLOYMENT (CD) - RENDER
+  # ============================================================
+  deploy:
+    name: 🚀 Deploy to Render
+    needs: quality-gate
+    if: |
+      needs.quality-gate.result == 'success' &&
+      (github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/main') &&
+      (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🚀 Trigger Render DEV Deploy
+        if: github.ref == 'refs/heads/dev'
+        run: |
+          echo "🚀 Triggering Deploy Hook for DEV..."
+          curl -f -s -X POST "${{ secrets.RENDER_DEPLOY_HOOK_DEV }}"
+          echo "✅ DEV Deploy triggered successfully on Render."
+
+      - name: 🚀 Trigger Render PROD Deploy
+        if: github.ref == 'refs/heads/main'
+        run: |
+          echo "🚀 Triggering Deploy Hook for PROD..."
+          curl -f -s -X POST "${{ secrets.RENDER_DEPLOY_HOOK_PROD }}"
+          echo "✅ PROD Deploy triggered successfully on Render."

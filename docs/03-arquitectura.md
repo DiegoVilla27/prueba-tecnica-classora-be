@@ -106,7 +106,7 @@ src/main/resources/
 ├── application-local.properties      # localhost:5432/pos_db + secretos de desarrollo + cajero demo
 ├── application-docker.properties     # global_postgres:5432/pos_db (red shared-network) + ídem
 ├── application-dev.properties        # Neon rama dev: valores sensibles como ${VARIABLE} (Render)
-├── application-prod.properties       # Neon rama main: ídem
+├── application-prod.properties       # Neon rama prod: ídem
 └── db/migration/
     ├── V1__init.sql                  # users, products, sales, sale_lines + constraints
     └── V2__seed_products.sql         # catálogo ficticio (= fixtures MSW del front)

@@ -277,3 +277,48 @@ Registro del uso de inteligencia artificial en el backend. Complementa la **Part
 - **Qué hizo la IA:** Comprobó Spotless y commit `feat(sale): add sale aggregate with checkout endpoints` en `main` con push a `origin/main`.
 - **Decisiones / correcciones humanas:** Ninguna.
 - **Resultado:** Hito 4 publicado en `origin/main`.
+
+### #20 · 2026-10-28 21:15 · Requisitos del usuario para el hito 5
+- **Herramienta:** Claude Code (Claude Opus 5.5)
+- **Prompt (resumen):** Antes de empezar el hito 5, decir qué necesita el usuario hacer.
+- **Qué hizo la IA:** Revisó `application-dev|prod.properties`, `docs/07-despliegue.md` y cómo se leen los secretos JWT (bytes UTF-8, mínimo 32). Listó las acciones del usuario: cuentas y proyecto Neon con ramas, dos servicios Render con sus variables y deploy hooks, secrets de GitHub y protección de ramas; separó lo que hace la IA.
+- **Decisiones / correcciones humanas:** Ninguna.
+- **Resultado:** Sin cambios de código.
+
+### #21 · 2026-10-28 21:40 · Diagnóstico del primer deploy en Render
+- **Herramienta:** Claude Code (Claude Opus 5.5)
+- **Prompt (resumen):** El usuario creó Neon (ramas `prod` y `dev`), los dos servicios de Render, la rama `dev` y los secrets de GitHub; los deploys salen en rojo.
+- **Qué hizo la IA:** Comprobó que las URLs de Render no responden al health check. Revisó el Dockerfile y la configuración base. Pidió el log del deploy y la lista de variables (solo nombres). Explicó cómo partir la cadena de Neon en las tres variables y quitar `channelBinding`.
+- **Incidencia:** El usuario pegó en el chat las cadenas de conexión con la contraseña de Neon. La IA no la reprodujo ni la guardó en ningún fichero y recomendó rotarla.
+- **Decisiones / correcciones humanas:** Las ramas de Neon se llaman `prod` y `dev` (no `main`/`dev`).
+- **Resultado:** Pendiente del log de Render.
+
+### #22 · 2026-10-28 21:50 · Causa del fallo en Render y variables obligatorias
+- **Herramienta:** Claude Code (Claude Opus 5.5)
+- **Prompt (resumen):** El usuario pegó los logs de los deploys de dev y prod y preguntó si `JWT_SECRET`, `JWT_REFRESH_SECRET`, `SEED_CASHIER_PASSWORD` y `CORS_ALLOWED_ORIGINS` son necesarias.
+- **Qué hizo la IA:** Identificó la causa: `'url' must start with "jdbc"`. `DATABASE_URL` no tenía el formato JDBC, y Spring falla al crear el `DataSource` antes de llegar a resolver los secretos JWT. Explicó para qué sirve cada variable y por qué no puede ir en el repo (público).
+- **Decisiones / correcciones humanas:** Ninguna.
+- **Resultado:** Sin cambios de código; el usuario corrige las variables en Render.
+
+### #23 · 2026-10-28 21:58 · Valores simples para las variables de Render
+- **Herramienta:** Claude Code (Claude Opus 5.5)
+- **Prompt (resumen):** El usuario pide valores concretos y sencillos para `JWT_SECRET`, `JWT_REFRESH_SECRET`, `SEED_CASHIER_PASSWORD` y `CORS_ALLOWED_ORIGINS`: el entorno es efímero.
+- **Qué hizo la IA:** Propuso valores legibles por entorno con el mismo patrón que `application-local.properties` (secretos JWT de al menos 32 caracteres).
+- **Decisiones / correcciones humanas:** El usuario prefiere valores simples en lugar de secretos aleatorios.
+- **Resultado:** Sin cambios de código.
+
+### #24 · 2026-10-28 22:20 · Hito 5: smoke test en Render y workflow CI/CD
+- **Herramienta:** Claude Code (Claude Opus 5.5)
+- **Prompt (resumen):** Los deploys de dev y prod ya están en verde.
+- **Qué hizo la IA:**
+  - **Smoke test** con un script en `curl` contra las dos URLs de Render: health 200; login, `/users/me` y producto 200; 401 sin token. Escaneó leche ×2 y bolsa ×3, con 404 para un código desconocido, y completó la venta (`COMPLETED`, 5 artículos, 2.20). Swagger 200. El primer intento dio timeouts porque los servicios estaban dormidos (plan gratuito).
+  - **`.github/workflows/ci-cd.yml`**, copiado del `ci-cd-backend.yml` de task-manager:
+    - `static-checks`: solo PR a `main` desde `dev`, más Spotless y compilación.
+    - `unit-tests` (JaCoCo ≥ 80 %), `integration-tests` (Failsafe + Testcontainers) y `build` (imagen Docker), en paralelo.
+    - `quality-gate` y `deploy` con los deploy hooks de Render.
+    - Sin detección de cambios por carpeta, Sonar ni Discord.
+  - Verificó en local los dos comandos nuevos: 107 tests unitarios con la cobertura cumplida y 17 IT.
+  - **Docs:** URLs reales en `04-api.md` y `07-despliegue.md`, ramas Neon `dev`/`prod`, cómo convertir la cadena de Neon a JDBC, tabla de jobs y roadmap del hito 5.
+- **Decisiones / correcciones humanas:** El usuario configuró Neon, Render y los secrets con valores simples (entorno efímero).
+- **Pendiente:** Protección de ramas en GitHub, que se hizo después con `gh` (ver #25).
+- **Resultado:** dev y prod funcionando; workflow y docs sin commit.

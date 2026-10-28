@@ -8,8 +8,8 @@ Mismo modelo que task-manager: perfiles de Spring por entorno, red Docker compar
 |---|---|---|---|---|
 | **local** | `local` | `global_postgres` expuesto en `localhost:5432`, BD `pos_db` | `http://localhost:8080/api/v1` | `pnpm local` (`:3000`) |
 | **docker** | `docker` | `global_postgres:5432/pos_db` (red `shared-network`) | `http://localhost:8080/api/v1` | contenedor del front |
-| **dev** | `dev` | Neon, rama `dev` | `https://<pos-api-dev>.onrender.com/api/v1` | Vercel preview (rama `dev`) |
-| **prod** | `prod` | Neon, rama `main` | `https://<pos-api-prod>.onrender.com/api/v1` | Vercel production (rama `main`) |
+| **dev** | `dev` | Neon, rama `dev` | `https://pos-api-dev-k0y9.onrender.com/api/v1` | Vercel preview (rama `dev`) |
+| **prod** | `prod` | Neon, rama `prod` | `https://pos-api-prod.onrender.com/api/v1` | Vercel production (rama `main`) |
 
 ## 2. Local con Docker
 
@@ -57,8 +57,11 @@ El front tiene su propio `docker-compose.yml` en la misma red, así que con ambo
 - **Arranque en frío** (plan gratuito, unos 50 s): el front lo gestiona con un estado "Conectando con el servidor…" y reintento (ver docs del front).
 
 ## 4. Neon
-- Un proyecto con dos ramas: `dev` y `main`. Flyway aplica las migraciones al arrancar cada servicio.
-- Cadena JDBC con `sslmode=require`. Credenciales **solo** en Render y GitHub Secrets.
+- Un proyecto (región Frankfurt) con dos ramas: `dev` y `prod`. Flyway aplica las migraciones al arrancar cada servicio.
+- Neon da la cadena como `postgresql://usuario:clave@host/neondb?...`; Spring necesita el formato JDBC y el usuario/clave aparte:
+  - `DATABASE_URL` = `jdbc:postgresql://<host>/neondb?sslmode=require`
+  - `DATABASE_USERNAME`, `DATABASE_PASSWORD`
+- Credenciales **solo** en Render. Si `DATABASE_URL` no empieza por `jdbc:`, el arranque falla con `'url' must start with "jdbc"`.
 
 ## 5. Ramas y CI/CD (GitHub Actions · `.github/workflows/ci-cd.yml`)
 
@@ -71,18 +74,21 @@ feature/* ──PR──▶ dev ──PR──▶ main
 
 | Job | Cuándo | Pasos |
 |---|---|---|
-| `quality` | PR y push a `dev`/`main` | `spotless:check` · `compile` |
-| `test` | tras `quality` | `./mvnw verify` (unit + IT con Testcontainers + JaCoCo) · artefacto con informe |
-| `deploy-dev` | push a `dev` y `test` OK | `curl $RENDER_DEPLOY_HOOK_DEV` |
-| `deploy-prod` | push a `main` y `test` OK | `curl $RENDER_DEPLOY_HOOK_PROD` |
+| `static-checks` | PR y push a `dev`/`main` | Solo PR a `main` desde `dev` · `spotless:check` · `compile` |
+| `unit-tests` | tras `static-checks` | `./mvnw test jacoco:check@check-coverage` (≥ 80 % en domain/application) · artefacto JaCoCo |
+| `integration-tests` | tras `static-checks`, en paralelo | `failsafe` sobre los `*IT` (Testcontainers) |
+| `build` | tras `static-checks`, en paralelo | `docker build` con el mismo `Dockerfile` que Render |
+| `quality-gate` | siempre | Falla si cualquiera de los anteriores falla |
+| `deploy` | push a `dev`/`main` con gate OK | `curl $RENDER_DEPLOY_HOOK_DEV` o `_PROD` |
 
-Secrets: `RENDER_DEPLOY_HOOK_DEV`, `RENDER_DEPLOY_HOOK_PROD` (y `SONAR_TOKEN` si se activa Sonar).
+Secrets: `RENDER_DEPLOY_HOOK_DEV`, `RENDER_DEPLOY_HOOK_PROD`. Mismo esquema que task-manager, sin detección de cambios por carpeta (repo de un solo proyecto), Sonar ni Discord.
 Protección de ramas: `main` y `dev` solo por PR con CI en verde.
 
 ## 6. Checklist de puesta en marcha
-- [ ] Crear BD `pos_db` en `global_postgres`.
-- [ ] Proyecto Neon con ramas `dev` y `main`.
-- [ ] Servicios Render `pos-api-dev` y `pos-api-prod` con variables y deploy hooks.
-- [ ] Secrets en GitHub.
+- [x] Crear BD `pos_db` en `global_postgres`.
+- [x] Proyecto Neon con ramas `dev` y `prod`.
+- [x] Servicios Render `pos-api-dev` y `pos-api-prod` con variables y deploy hooks.
+- [x] Secrets en GitHub.
 - [ ] Rama `dev` creada desde `main` y protegida.
-- [ ] Añadir las URLs reales a este doc, a `OpenApiConfig` y al front.
+- [x] URLs reales en este doc y en `04-api.md` (`OpenApiConfig` usa la URL relativa `/api/v1`, válida en todos los entornos).
+- [ ] URLs en el front.

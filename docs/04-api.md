@@ -3,8 +3,8 @@
 | Entorno | Base URL | Swagger |
 |---|---|---|
 | local / docker | `http://localhost:8080/api/v1` | `/api/v1/api-docs/swagger-ui.html` |
-| dev | `https://<pos-api-dev>.onrender.com/api/v1` | ídem |
-| prod | `https://<pos-api-prod>.onrender.com/api/v1` | ídem |
+| dev | `https://pos-api-dev-k0y9.onrender.com/api/v1` | ídem |
+| prod | `https://pos-api-prod.onrender.com/api/v1` | ídem |
 
 Auth: `Authorization: Bearer <accessToken>` salvo `/auth/**`, `/api-docs/**` y `/actuator/health`.
 
