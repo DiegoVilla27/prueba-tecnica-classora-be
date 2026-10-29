@@ -1,5 +1,6 @@
 package com.diegovilla.pos.features.sale.application.ports;
 
+import com.diegovilla.pos.features.sale.application.dto.response.SaleSummaryPage;
 import com.diegovilla.pos.features.sale.domain.model.SaleModel;
 import java.util.Optional;
 import java.util.UUID;
@@ -34,6 +35,16 @@ public interface SaleRepositoryPort {
      * @return {@code true} if an open sale exists; {@code false} otherwise.
      */
     boolean existsOpenByCashierId(UUID cashierId);
+
+    /**
+     * Retrieves one page of the sales of a cashier, newest first, as summaries.
+     *
+     * @param cashierId identifier of the cashier.
+     * @param page zero-based page number.
+     * @param size page size.
+     * @return the {@link SaleSummaryPage}.
+     */
+    SaleSummaryPage findSummariesByCashierId(UUID cashierId, int page, int size);
 
     /**
      * Persists a new or updated sale with its lines, applying optimistic locking.

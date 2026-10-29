@@ -386,3 +386,17 @@ Registro del uso de inteligencia artificial en el backend. Complementa la **Part
   - **Corrección:** la entrada #28 decía "pendiente de desplegar".
 - **Decisiones / correcciones humanas:** El usuario configuró el CORS de Render. Prod sigue aceptando también `localhost` (decisión del usuario; opcional quitarlo).
 - **Resultado:** Back documentado para la entrega; PR a `dev` y a `main` mergeados con el CI en verde.
+
+### #30 · 2026-10-29 21:50 · Historial de ventas: `GET /sales`
+- **Herramienta:** Claude Code (Claude Opus 5.5)
+- **Prompt (resumen):** Tras la entrega, el autor pidió una pantalla con todas las ventas y su detalle; el back no tenía listado (estaba en "fuera de alcance").
+- **Qué hizo la IA:**
+  - **`GET /sales?page&size`:** ventas del cajero autenticado, de la más reciente a la más antigua.
+    - El resumen (`itemCount`, `lineCount`, `total`) se calcula en **una sola consulta JPQL** con `GROUP BY`, sin cargar líneas (proyección `SaleSummaryRow` → `SaleSummary`/`SaleSummaryPage` de aplicación).
+    - Paginación con `countQuery` propia.
+    - Una venta sin líneas da `null` en las sumas; el adaptador la convierte en 0 y 0.00.
+  - **Infraestructura:** `SalePageResponseDTO`/`SaleSummaryResponseDTO`, mapper MapStruct, `ListSalesDocumentation` y validación de `page` (≥ 0) y `size` (1–100).
+  - **Tests:** unit de service, controller y adapter (sumas `null`). `SalesHistoryIT` con un cajero nuevo por test: orden, totales, paginación, aislamiento entre cajeros, 400 y 401.
+  - **Docs:** UC-S09 en `02`, contrato en `04` y roadmap; se quita del "fuera de alcance".
+- **Decisiones / correcciones humanas:** El autor pidió el historial.
+- **Resultado:** `./mvnw verify` en verde (22 IT, JaCoCo OK). El e2e full-stack del front pasó contra este back arrancado en el 8081.

@@ -40,6 +40,10 @@ Se trabaja primero el backend completo y desplegado; después el front lo consum
 - [x] README estilo task-manager: badges, arquitectura, entornos con URLs, credenciales demo, comandos, Docker, CI/CD.
 - [x] `AI_LOG.md` revisado (numeración continua y sin credenciales).
 
+
+## Hito 7 · Historial de ventas ✅ (petición del autor tras la entrega)
+- [x] `GET /sales` paginado: resúmenes con agregados en una sola consulta (`SaleSummaryRow` → `SaleSummary`), solo las ventas del cajero autenticado, de la más reciente a la más antigua.
+- [x] `ListSalesDocumentation`, validación de `page`/`size`, unit tests (service, controller, adapter) y `SalesHistoryIT` (orden, totales, paginación, aislamiento entre cajeros, 400 y 401).
 ---
 
 ## Fuera de alcance (se explica en la entrevista)
@@ -50,7 +54,6 @@ Se trabaja primero el backend completo y desplegado; después el front lo consum
 | Gestión de usuarios (CRUD) | Feature `user` completa como task-manager | No hay backoffice; un cajero sembrado |
 | Gestión del catálogo | CRUD de productos + caché con invalidación | Catálogo fijo por migración |
 | Caché de productos | Caffeine `@Cacheable` / Redis | El índice único basta a esta escala |
-| Listados e informes de ventas | `GET /sales` paginado con Specifications | Ningún caso de uso lo usa |
 | Pagos, tickets, IVA, promociones, inventario, devoluciones | Nuevos bounded contexts, eventos de dominio y outbox | Fuera del enunciado |
 | Multi-tienda / multi-caja | `storeId`, `terminalId` en la venta | Una caja |
 | Observabilidad avanzada | Micrometer + Prometheus + OpenTelemetry | Actuator `health` basta |

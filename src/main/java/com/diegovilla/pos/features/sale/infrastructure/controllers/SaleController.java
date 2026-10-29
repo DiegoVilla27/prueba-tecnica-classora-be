@@ -8,14 +8,18 @@ import com.diegovilla.pos.features.sale.infrastructure.docs.ChangeSaleLineQuanti
 import com.diegovilla.pos.features.sale.infrastructure.docs.CompleteSaleDocumentation;
 import com.diegovilla.pos.features.sale.infrastructure.docs.GetCurrentSaleDocumentation;
 import com.diegovilla.pos.features.sale.infrastructure.docs.GetSaleByIdDocumentation;
+import com.diegovilla.pos.features.sale.infrastructure.docs.ListSalesDocumentation;
 import com.diegovilla.pos.features.sale.infrastructure.docs.OpenSaleDocumentation;
 import com.diegovilla.pos.features.sale.infrastructure.docs.RemoveSaleLineDocumentation;
 import com.diegovilla.pos.features.sale.infrastructure.dto.request.SaleAddLineRequestDTO;
 import com.diegovilla.pos.features.sale.infrastructure.dto.request.SaleChangeQuantityRequestDTO;
+import com.diegovilla.pos.features.sale.infrastructure.dto.response.SalePageResponseDTO;
 import com.diegovilla.pos.features.sale.infrastructure.dto.response.SaleResponseDTO;
 import com.diegovilla.pos.features.sale.infrastructure.mappers.SaleDtoMapper;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import java.net.URI;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +32,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -61,6 +66,25 @@ public class SaleController {
                         .buildAndExpand(sale.getId())
                         .toUri();
         return ResponseEntity.created(location).body(saleDtoMapper.modelToResponseDTO(sale));
+    }
+
+    /**
+     * Lists the sales of the authenticated cashier, newest first.
+     *
+     * @param page zero-based page number.
+     * @param size page size (1–100).
+     * @return HTTP 200 with the {@link SalePageResponseDTO}.
+     */
+    @GetMapping
+    @ListSalesDocumentation
+    public ResponseEntity<SalePageResponseDTO> list(
+            @RequestParam(defaultValue = "0") @Min(value = 0, message = "Page must be 0 or more")
+                    int page,
+            @RequestParam(defaultValue = "20")
+                    @Min(value = 1, message = "Size must be between 1 and 100")
+                    @Max(value = 100, message = "Size must be between 1 and 100")
+                    int size) {
+        return ResponseEntity.ok(saleDtoMapper.pageToResponseDTO(saleService.listMine(page, size)));
     }
 
     /**
