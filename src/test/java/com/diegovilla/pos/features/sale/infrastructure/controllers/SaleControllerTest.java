@@ -6,11 +6,13 @@ import static org.mockito.Mockito.when;
 
 import com.diegovilla.pos.features.sale.application.commands.SaleAddLineCommand;
 import com.diegovilla.pos.features.sale.application.commands.SaleChangeQuantityCommand;
+import com.diegovilla.pos.features.sale.application.dto.response.SaleSummaryPage;
 import com.diegovilla.pos.features.sale.application.services.SaleService;
 import com.diegovilla.pos.features.sale.domain.model.SaleModel;
 import com.diegovilla.pos.features.sale.domain.valueobjects.SaleStatus;
 import com.diegovilla.pos.features.sale.infrastructure.dto.request.SaleAddLineRequestDTO;
 import com.diegovilla.pos.features.sale.infrastructure.dto.request.SaleChangeQuantityRequestDTO;
+import com.diegovilla.pos.features.sale.infrastructure.dto.response.SalePageResponseDTO;
 import com.diegovilla.pos.features.sale.infrastructure.dto.response.SaleResponseDTO;
 import com.diegovilla.pos.features.sale.infrastructure.mappers.SaleDtoMapper;
 import java.math.BigDecimal;
@@ -120,5 +122,19 @@ class SaleControllerTest {
 
         assertThat(cancelled.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
         verify(saleService).cancel(sale.getId());
+    }
+
+    @Test
+    @DisplayName("Should return 200 with a page of the sales history")
+    void shouldListSales() {
+        SaleSummaryPage page = new SaleSummaryPage(List.of(), 0, 20, 0, 0);
+        SalePageResponseDTO pageDto = new SalePageResponseDTO(List.of(), 0, 20, 0, 0);
+        when(saleService.listMine(0, 20)).thenReturn(page);
+        when(saleDtoMapper.pageToResponseDTO(page)).thenReturn(pageDto);
+
+        ResponseEntity<SalePageResponseDTO> response = saleController.list(0, 20);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isEqualTo(pageDto);
     }
 }

@@ -7,6 +7,7 @@ import com.diegovilla.pos.features.product.domain.exceptions.ProductNotFoundExce
 import com.diegovilla.pos.features.product.domain.model.ProductModel;
 import com.diegovilla.pos.features.sale.application.commands.SaleAddLineCommand;
 import com.diegovilla.pos.features.sale.application.commands.SaleChangeQuantityCommand;
+import com.diegovilla.pos.features.sale.application.dto.response.SaleSummaryPage;
 import com.diegovilla.pos.features.sale.application.ports.SaleRepositoryPort;
 import com.diegovilla.pos.features.sale.domain.exceptions.OpenSaleAlreadyExistsException;
 import com.diegovilla.pos.features.sale.domain.exceptions.SaleNotFoundException;
@@ -54,6 +55,29 @@ public class SaleService {
         log.info("Sale opened successfully. id={}", sale.getId());
 
         return sale;
+    }
+
+    /**
+     * Retrieves one page of the sales history of the authenticated cashier, newest first.
+     *
+     * <p>Only the cashier's own sales are listed (there are no roles), so no permission check is
+     * needed: the query is already scoped to the authenticated user.
+     *
+     * @param page zero-based page number.
+     * @param size page size.
+     * @return the {@link SaleSummaryPage}.
+     */
+    public SaleSummaryPage listMine(int page, int size) {
+        SaleSummaryPage sales =
+                saleRepositoryPort.findSummariesByCashierId(
+                        authenticatedUserProvider.getCurrentUserId(), page, size);
+
+        log.info(
+                "Sales history retrieved successfully. page={} totalElements={}",
+                page,
+                sales.totalElements());
+
+        return sales;
     }
 
     /**
