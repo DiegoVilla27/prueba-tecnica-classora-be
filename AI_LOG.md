@@ -372,4 +372,17 @@ Registro del uso de inteligencia artificial en el backend. Complementa la **Part
     - `./mvnw verify`: 107 unit + 19 IT en verde.
     - BD local: el usuario tenía la API corriendo desde su IDE en el 8080 y no se paró; se arrancó una segunda instancia en el 8081 para migrar. Resultado: V3 aplicada, 1 usuario, 0 ventas, 20 productos y login 200.
 - **Decisiones / correcciones humanas:** El usuario quiere el catálogo fijo y sin el código PLU de 4 dígitos. Los códigos son EAN-13 válidos pero no de marcas reales; la validación sigue aceptando de 4 a 14 dígitos.
-- **Resultado:** Pendiente de desplegar en dev y prod por PR.
+- **Resultado:** Desplegado en dev y prod con los PR #3 y #4 (ver #29).
+
+### #29 · 2026-10-29 19:30 · Despliegue del catálogo fijo y entrega del back
+- **Herramienta:** Claude Code (Claude Opus 5.5)
+- **Prompt (resumen):** Cierre del proyecto (hito 8 del front): dejar el back listo para la entrega.
+- **Qué hizo la IA:**
+  - **Registro del catálogo fijo (#28):** PR #3 (`feature/reseed-products` → `dev`) y PR #4 (`dev` → `main`) mergeados con el CI en verde. Verificado contra dev y prod: el EAN-13 nuevo da 200, `1001` y la leche antigua dan 404, no hay venta abierta y el login funciona.
+  - **Enlace con el front:**
+    - README con las URLs de Vercel y los valores de `CORS_ALLOWED_ORIGINS` por entorno;
+    - `docs/07` con los orígenes de cada entorno, la verificación por preflight (permitidos frente a 403) y el aviso de "Save, rebuild, and deploy" en Render.
+  - **Integración en el CI del front:** construye la imagen de este back desde `main` y ejecuta los e2e contra ella en cada PR.
+  - **Corrección:** la entrada #28 decía "pendiente de desplegar".
+- **Decisiones / correcciones humanas:** El usuario configuró el CORS de Render. Prod sigue aceptando también `localhost` (decisión del usuario; opcional quitarlo).
+- **Resultado:** Back documentado para la entrega; PR a `dev` y a `main` mergeados con el CI en verde.
