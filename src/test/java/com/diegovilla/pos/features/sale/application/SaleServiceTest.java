@@ -15,6 +15,8 @@ import com.diegovilla.pos.features.product.domain.exceptions.ProductNotFoundExce
 import com.diegovilla.pos.features.product.domain.model.ProductModel;
 import com.diegovilla.pos.features.sale.application.commands.SaleAddLineCommand;
 import com.diegovilla.pos.features.sale.application.commands.SaleChangeQuantityCommand;
+import com.diegovilla.pos.features.sale.application.dto.response.SaleSummary;
+import com.diegovilla.pos.features.sale.application.dto.response.SaleSummaryPage;
 import com.diegovilla.pos.features.sale.application.ports.SaleRepositoryPort;
 import com.diegovilla.pos.features.sale.application.services.SaleService;
 import com.diegovilla.pos.features.sale.domain.exceptions.OpenSaleAlreadyExistsException;
@@ -23,6 +25,7 @@ import com.diegovilla.pos.features.sale.domain.model.SaleModel;
 import com.diegovilla.pos.features.sale.domain.valueobjects.SaleStatus;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
@@ -212,5 +215,31 @@ class SaleServiceTest {
 
         assertThat(sale.getStatus()).isEqualTo(SaleStatus.CANCELLED);
         verify(saleRepositoryPort).save(sale);
+    }
+
+    @Test
+    @DisplayName("Should list only the sales of the authenticated cashier")
+    void shouldListMySales() {
+        SaleSummaryPage page =
+                new SaleSummaryPage(
+                        List.of(
+                                new SaleSummary(
+                                        UUID.randomUUID(),
+                                        SaleStatus.COMPLETED,
+                                        6,
+                                        4,
+                                        new BigDecimal("14.94"),
+                                        Instant.now(),
+                                        Instant.now())),
+                        0,
+                        20,
+                        1,
+                        1);
+        when(authenticatedUserProvider.getCurrentUserId()).thenReturn(cashierId);
+        when(saleRepositoryPort.findSummariesByCashierId(cashierId, 0, 20)).thenReturn(page);
+
+        SaleSummaryPage result = saleService.listMine(0, 20);
+
+        assertThat(result).isEqualTo(page);
     }
 }

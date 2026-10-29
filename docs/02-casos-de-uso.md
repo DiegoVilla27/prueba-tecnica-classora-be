@@ -64,6 +64,9 @@ Errores: 400 · 403 · 404 · 409 (no abierta / concurrencia) · 422 (cantidad).
 ### UC-S08 · Cancelar venta
 `PATCH /sales/{id}/cancel` → **204** · 403 · 404 · 409. El front a continuación abre una venta nueva.
 
+### UC-S09 · Historial de ventas
+`GET /sales?page=0&size=20` → 200 con una página de **resúmenes** de las ventas del cajero autenticado (abiertas, finalizadas y canceladas), de la más reciente a la más antigua: `itemCount`, `lineCount` y `total` se calculan en la misma consulta (agregados con `GROUP BY`, sin cargar líneas). El detalle de una venta es UC-S03. `size` 1–100 (400 si no). Solo las ventas propias: la consulta ya filtra por el cajero autenticado.
+
 ---
 
 ## Secuencia · UC-S04

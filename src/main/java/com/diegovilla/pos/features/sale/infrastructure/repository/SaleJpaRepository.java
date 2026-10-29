@@ -4,8 +4,12 @@ import com.diegovilla.pos.features.sale.domain.valueobjects.SaleStatus;
 import com.diegovilla.pos.features.sale.infrastructure.entity.SaleEntity;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -47,4 +51,27 @@ public interface SaleJpaRepository extends JpaRepository<SaleEntity, UUID> {
      * @return {@code true} if found; {@code false} otherwise.
      */
     boolean existsByCashierIdAndStatus(UUID cashierId, SaleStatus status);
+
+    /**
+     * Retrieves one page of the sales of a cashier, newest first, with their lines aggregated in
+     * the same query (no lines are loaded).
+     *
+     * @param cashierId identifier of the cashier.
+     * @param pageable page number and size (the order is fixed by the query).
+     * @return a page of {@link SaleSummaryRow}.
+     */
+    @Query(
+            value =
+                    """
+                    select new com.diegovilla.pos.features.sale.infrastructure.repository.SaleSummaryRow(
+                        s.id, s.status, sum(l.quantity), count(l),
+                        sum(l.unitPrice * l.quantity), s.createdAt, s.closedAt)
+                    from SaleEntity s left join s.lines l
+                    where s.cashierId = :cashierId
+                    group by s.id, s.status, s.createdAt, s.closedAt
+                    order by s.createdAt desc
+                    """,
+            countQuery = "select count(s) from SaleEntity s where s.cashierId = :cashierId")
+    Page<SaleSummaryRow> findSummariesByCashierId(
+            @Param("cashierId") UUID cashierId, Pageable pageable);
 }

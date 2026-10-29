@@ -17,6 +17,7 @@ Auth: `Authorization: Bearer <accessToken>` salvo `/auth/**`, `/api-docs/**` y `
 | GET | `/users/me` | ✅ | — | 200 · 401 |
 | GET | `/products/{code}` ⭐ | ✅ | — | 200 · 400 · 401 · 404 · 429 |
 | POST | `/sales` | ✅ | — | 201 + `Location` · 401 · 409 |
+| GET | `/sales?page=0&size=20` | ✅ | — | 200 · 400 · 401 |
 | GET | `/sales/current` | ✅ | — | 200 · 401 · 404 |
 | GET | `/sales/{id}` | ✅ (suya) | — | 200 · 401 · 403 · 404 |
 | POST | `/sales/{id}/lines` | ✅ (suya) | `{ code, quantity }` | 200 · 400 · 401 · 403 · 404 · 409 · 422 |
@@ -78,6 +79,18 @@ public record SaleAddLineRequestDTO(
   "closedAt": null
 }
 ```
+
+### `SalePageResponseDTO` (`GET /sales`)
+```json
+{
+  "content": [
+    { "id": "…", "status": "COMPLETED", "itemCount": 5, "lineCount": 2, "total": 2.20,
+      "createdAt": "2026-10-29T14:55:47Z", "closedAt": "2026-10-29T14:58:02Z" }
+  ],
+  "page": 0, "size": 20, "totalElements": 42, "totalPages": 3
+}
+```
+Ventas del cajero autenticado, de la más reciente a la más antigua. Sin líneas: el detalle es `GET /sales/{id}`.
 
 ## 3. Errores (formato único de task-manager)
 
