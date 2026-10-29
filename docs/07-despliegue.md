@@ -8,8 +8,8 @@ Mismo modelo que task-manager: perfiles de Spring por entorno, red Docker compar
 |---|---|---|---|---|
 | **local** | `local` | `global_postgres` expuesto en `localhost:5432`, BD `pos_db` | `http://localhost:8080/api/v1` | `pnpm local` (`:3000`) |
 | **docker** | `docker` | `global_postgres:5432/pos_db` (red `shared-network`) | `http://localhost:8080/api/v1` | contenedor del front |
-| **dev** | `dev` | Neon, rama `dev` | `https://pos-api-dev-k0y9.onrender.com/api/v1` | Vercel preview (rama `dev`) |
-| **prod** | `prod` | Neon, rama `prod` | `https://pos-api-prod.onrender.com/api/v1` | Vercel production (rama `main`) |
+| **dev** | `dev` | Neon, rama `dev` | `https://pos-api-dev-k0y9.onrender.com/api/v1` | https://classora-tpv-dev.vercel.app (rama `dev` del front) |
+| **prod** | `prod` | Neon, rama `prod` | `https://pos-api-prod.onrender.com/api/v1` | https://classora-tpv-prod.vercel.app (rama `main` del front) |
 
 ## 2. Local con Docker
 
@@ -52,6 +52,7 @@ El front tiene su propio `docker-compose.yml` en la misma red, así que con ambo
 ## 3. Render (dev y prod)
 - Dos servicios **Web Service (Docker)**: `pos-api-dev` y `pos-api-prod`, con deploy automático desactivado (lo dispara CI con *deploy hook*).
 - Variables por servicio (las que `application-dev|prod.properties` referencian como `${...}`): `SPRING_PROFILES_ACTIVE`, `DATABASE_URL`, `DATABASE_USERNAME`, `DATABASE_PASSWORD`, `JWT_SECRET`, `JWT_REFRESH_SECRET`, `CORS_ALLOWED_ORIGINS`, `SEED_CASHIER_PASSWORD`.
+- `CORS_ALLOWED_ORIGINS` (patrones separados por coma): dev `http://localhost:[*],https://classora-tpv-dev.vercel.app` · prod `https://classora-tpv-prod.vercel.app`. Verificado con preflight: esos orígenes reciben `Access-Control-Allow-Origin` y cualquier otro, 403. Al cambiar una variable hay que elegir **Save, rebuild, and deploy** (el auto-deploy está desactivado).
 - Health check: `/api/v1/actuator/health`.
 - Render inyecta `PORT`: la app escucha en `server.port=${PORT:8080}` y confía en las cabeceras `X-Forwarded-*` del proxy (`server.forward-headers-strategy=framework`).
 - **Arranque en frío** (plan gratuito, unos 50 s): el front lo gestiona con un estado "Conectando con el servidor…" y reintento (ver docs del front).
