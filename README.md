@@ -13,7 +13,7 @@ API REST de la caja de supermercado de la prueba técnica de Classora: **cajeros
 
 Arquitectura **hexagonal por features + DDD**, con el mismo estilo que [task-manager](https://github.com/DiegoVilla27/task-manager-system/tree/main/apps/task-manager).
 
-> Frontend: `prueba-tecnica-classora-fe` (React · Vercel).
+> **Frontend**: [`prueba-tecnica-classora-fe`](https://github.com/DiegoVilla27/prueba-tecnica-classora-fe) (React 19 · Vercel) → app en **https://classora-tpv-prod.vercel.app** (prod) y https://classora-tpv-dev.vercel.app (dev), con los mismos cajeros demo. Su CI construye la imagen de este back y ejecuta los e2e contra ella en cada PR.
 
 ---
 
@@ -117,7 +117,7 @@ Toda la configuración está en `src/main/resources/application.properties` (com
 | `docker` | `jdbc:postgresql://global_postgres:5432/pos_db` | En el fichero (solo desarrollo) |
 | `dev` / `prod` | Neon (`jdbc:postgresql://ep-***.neon.tech/neondb?sslmode=require`) | `${VARIABLE}` resueltas con las variables de entorno de Render |
 
-Variables de Render: `SPRING_PROFILES_ACTIVE`, `DATABASE_URL`, `DATABASE_USERNAME`, `DATABASE_PASSWORD`, `JWT_SECRET`, `JWT_REFRESH_SECRET`, `SEED_CASHIER_PASSWORD`, `CORS_ALLOWED_ORIGINS`. Ver [`docs/07-despliegue.md`](docs/07-despliegue.md).
+Variables de Render: `SPRING_PROFILES_ACTIVE`, `DATABASE_URL`, `DATABASE_USERNAME`, `DATABASE_PASSWORD`, `JWT_SECRET`, `JWT_REFRESH_SECRET`, `SEED_CASHIER_PASSWORD`, `CORS_ALLOWED_ORIGINS` (dev: `http://localhost:[*],https://classora-tpv-dev.vercel.app` · prod: `https://classora-tpv-prod.vercel.app`). Ver [`docs/07-despliegue.md`](docs/07-despliegue.md).
 
 ---
 
