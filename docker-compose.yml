@@ -1,19 +1,37 @@
-# API container on the external "shared-network" (see docs/07-despliegue.md).
-# Requires global_postgres from ~/Desktop/shared-network/docker-compose.yml and a pos_db database.
+# Self-contained: API + its own PostgreSQL. `docker compose up --build -d` is all it needs.
+# Postgres is not published to the host, so it never clashes with another one on :5432.
 name: classora-pos
 
-networks:
-  shared-network:
-    external: true
-
 services:
+  pos-db:
+    image: postgres:15-alpine
+    container_name: pos_db
+    restart: always
+    environment:
+      - POSTGRES_DB=pos_db
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+    volumes:
+      - pos_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d pos_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
   pos-api:
     build: .
     container_name: pos_api
     restart: always
+    depends_on:
+      pos-db:
+        condition: service_healthy
     environment:
       - SPRING_PROFILES_ACTIVE=docker
+      # Overrides the docker profile's global_postgres host with the database above
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://pos-db:5432/pos_db
     ports:
       - "8080:8080"
-    networks:
-      - shared-network
+
+volumes:
+  pos_db_data:
