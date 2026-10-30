@@ -400,3 +400,18 @@ Registro del uso de inteligencia artificial en el backend. Complementa la **Part
   - **Docs:** UC-S09 en `02`, contrato en `04` y roadmap; se quita del "fuera de alcance".
 - **Decisiones / correcciones humanas:** El autor pidió el historial.
 - **Resultado:** `./mvnw verify` en verde (22 IT, JaCoCo OK). El e2e full-stack del front pasó contra este back arrancado en el 8081.
+
+### #31 · 2026-10-30 15:44 · Docker autosuficiente para quien clone el repo
+- **Prompt (resumen):** Si la empresa clona los repos y hace `docker compose up`, ¿funciona? Si no, cambiar los dos `docker-compose.yml`.
+- **Qué hizo la IA:**
+  - Detectó que el compose dependía de la red externa `shared-network` y de `global_postgres`. Las dos solo existen en la máquina del autor, así que en otra máquina fallaba al arrancar.
+  - El `docker-compose.yml` ahora trae su propio `postgres:15-alpine`:
+    - crea `pos_db` sola, con volumen y `healthcheck`;
+    - la API espera con `depends_on: service_healthy`;
+    - apunta a ese Postgres con `SPRING_DATASOURCE_URL`, sin tocar `application-docker.properties`.
+  - Postgres no se publica en el host, para no chocar con otro en el 5432.
+- **Decisiones / correcciones humanas:** El autor pidió cambiar solo los composes.
+- **Resultado:**
+  - `docker compose config` es válido.
+  - Probado con permiso del autor (puertos 8080 y 3000 liberados): la API arrancó con su Postgres (3 migraciones y cajero sembrado). Desde el front en contenedor se hizo login, dos escaneos, se finalizó la venta (11,80 €) y apareció en el historial. Contenedores, volumen e imágenes borrados después.
+  - Sin commit.
