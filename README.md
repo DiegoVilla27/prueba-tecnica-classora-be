@@ -21,8 +21,8 @@ Arquitectura **hexagonal por features + DDD**, con el mismo estilo que [task-man
 
 | Entorno | API | Swagger UI | Base de datos | Cajero demo |
 | :-- | :-- | :-- | :-- | :-- |
-| **local** | `http://localhost:8080/api/v1` | [Swagger local](http://localhost:8080/api/v1/api-docs/swagger-ui.html) | `global_postgres` (`localhost:5432/pos_db`) | `cajero@pos.local` / `cajero1234` |
-| **docker** | `http://localhost:8080/api/v1` | [Swagger docker](http://localhost:8080/api/v1/api-docs/swagger-ui.html) | `global_postgres:5432/pos_db` | `cajero@pos.local` / `cajero1234` |
+| **local** | `http://localhost:8080/api/v1` | [Swagger local](http://localhost:8080/api/v1/api-docs/swagger-ui.html) | Postgres en `localhost:5432/pos_db` | `cajero@pos.local` / `cajero1234` |
+| **docker** | `http://localhost:8080/api/v1` | [Swagger docker](http://localhost:8080/api/v1/api-docs/swagger-ui.html) | Postgres propio del compose (`pos-db:5432/pos_db`) | `cajero@pos.local` / `cajero1234` |
 | **dev** | `https://pos-api-dev-k0y9.onrender.com/api/v1` | [Swagger dev](https://pos-api-dev-k0y9.onrender.com/api/v1/api-docs/swagger-ui.html) | Neon, rama `dev` | `cajero@pos.dev` / `cajero1234` |
 | **prod** | `https://pos-api-prod.onrender.com/api/v1` | [Swagger prod](https://pos-api-prod.onrender.com/api/v1/api-docs/swagger-ui.html) | Neon, rama `prod` | `cajero@pos.prod` / `cajero1234` |
 
@@ -114,7 +114,7 @@ Toda la configuración está en `src/main/resources/application.properties` (com
 | Perfil | Base de datos | Valores sensibles |
 | :-- | :-- | :-- |
 | `local` (por defecto) | `jdbc:postgresql://localhost:5432/pos_db` | En el fichero (solo desarrollo) |
-| `docker` | `jdbc:postgresql://global_postgres:5432/pos_db` | En el fichero (solo desarrollo) |
+| `docker` | `jdbc:postgresql://pos-db:5432/pos_db` (el compose lo fija con `SPRING_DATASOURCE_URL`) | En el fichero (solo desarrollo) |
 | `dev` / `prod` | Neon (`jdbc:postgresql://ep-***.neon.tech/neondb?sslmode=require`) | `${VARIABLE}` resueltas con las variables de entorno de Render |
 
 Variables de Render: `SPRING_PROFILES_ACTIVE`, `DATABASE_URL`, `DATABASE_USERNAME`, `DATABASE_PASSWORD`, `JWT_SECRET`, `JWT_REFRESH_SECRET`, `SEED_CASHIER_PASSWORD`, `CORS_ALLOWED_ORIGINS` (dev: `http://localhost:[*],https://classora-tpv-dev.vercel.app` · prod: `https://classora-tpv-prod.vercel.app`). Ver [`docs/07-despliegue.md`](docs/07-despliegue.md).
@@ -123,18 +123,21 @@ Variables de Render: `SPRING_PROFILES_ACTIVE`, `DATABASE_URL`, `DATABASE_USERNAM
 
 ## ▶️ Ejecutar en local
 
-Requisitos: JDK 17 o superior, Docker y la infraestructura compartida (`~/Desktop/shared-network`, contenedor `global_postgres`).
+**Opción A · Todo con Docker** (solo hace falta Docker):
 
 ```bash
-# 1. Base de datos (una vez)
-docker compose -f ~/Desktop/shared-network/docker-compose.yml up -d postgres
-docker exec global_postgres psql -U user -d postgres -c "CREATE DATABASE pos_db;"
+docker compose up --build -d     # API + su propio PostgreSQL → http://localhost:8080/api/v1
+docker compose down -v           # parar y borrar los datos
+```
 
-# 2a. API en la máquina (perfil local) → http://localhost:8080/api/v1
-./mvnw spring-boot:run
+El compose levanta un `postgres:15-alpine` que crea `pos_db` solo, y la API espera a que esté listo. Flyway crea el esquema y los 20 productos, y el cajero `cajero@pos.local` / `cajero1234` se siembra al arrancar. Ese Postgres no se publica en el host, así que no choca con otro en el 5432. Para usar la caja, levanta después el front con su propio `docker compose up --build -d` (ver [repo del front](https://github.com/DiegoVilla27/prueba-tecnica-classora-fe)) y abre `http://localhost:3000`.
 
-# 2b. o API en contenedor (perfil docker, red shared-network)
-docker compose up --build -d
+**Opción B · API en la máquina** (JDK 17 o superior y un PostgreSQL en `localhost:5432` con usuario `user` / `password`):
+
+```bash
+docker run -d --name pos-postgres -p 5432:5432 \
+  -e POSTGRES_DB=pos_db -e POSTGRES_USER=user -e POSTGRES_PASSWORD=password postgres:15-alpine
+./mvnw spring-boot:run           # perfil local → http://localhost:8080/api/v1
 ```
 
 Health: `http://localhost:8080/api/v1/actuator/health`.

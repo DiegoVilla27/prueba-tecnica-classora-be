@@ -10,7 +10,7 @@ Se trabaja primero el backend completo y desplegado; después el front lo consum
 - [x] Perfiles `local`, `docker`, `dev`, `prod` en `application-<perfil>.properties` (dev/prod con placeholders para Render).
 - [x] `core/` desde task-manager: errors, openapi, security (JWT sin roles, CORS por entorno, rate limit con bucket de login). El seeder se hace en el hito 2.
 - [x] `V1__init.sql` (esquema completo).
-- [x] `Dockerfile` + `docker-compose.yml` (red `shared-network`).
+- [x] `Dockerfile` + `docker-compose.yml` autosuficiente (API + PostgreSQL propio).
 
 ## Hito 2 · `user` + `auth` ✅
 - [x] `UserModel` (cajero, sin roles), puertos, adapters, `/users/me`.

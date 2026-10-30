@@ -415,3 +415,14 @@ Registro del uso de inteligencia artificial en el backend. Complementa la **Part
   - `docker compose config` es válido.
   - Probado con permiso del autor (puertos 8080 y 3000 liberados): la API arrancó con su Postgres (3 migraciones y cajero sembrado). Desde el front en contenedor se hizo login, dos escaneos, se finalizó la venta (11,80 €) y apareció en el historial. Contenedores, volumen e imágenes borrados después.
   - Sin commit.
+
+### #32 · 2026-10-30 16:10 · Docs de Docker sin infraestructura del autor
+- **Prompt (resumen):** Actualizar los README con las nuevas instrucciones de Docker.
+- **Qué hizo la IA:**
+  - El README tiene dos opciones de arranque:
+    - A: todo con `docker compose up --build -d`;
+    - B: API en la máquina con un `docker run` de Postgres genérico.
+  - Ya no aparecen rutas del escritorio del autor ni `global_postgres`.
+  - Actualizados `docs/07-despliegue.md` (§1 y §2 con el compose nuevo), `03` y el roadmap.
+- **Decisiones / correcciones humanas:** Lo pidió el autor.
+- **Resultado:** Solo documentación. Se mantiene en el checklist histórico de `07` la línea "Crear BD en `global_postgres`", porque es lo que se hizo en su momento.

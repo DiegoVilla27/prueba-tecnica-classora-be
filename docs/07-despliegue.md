@@ -1,51 +1,40 @@
 # 07 · Entornos, Docker y despliegue
 
-Mismo modelo que task-manager: perfiles de Spring por entorno, red Docker compartida en local, Render + Neon en la nube y GitHub Actions.
+Perfiles de Spring por entorno (como task-manager), Docker autosuficiente en local, Render + Neon en la nube y GitHub Actions.
 
 ## 1. Entornos
 
 | Entorno | Perfil | Base de datos | URL API | Front que lo consume |
 |---|---|---|---|---|
-| **local** | `local` | `global_postgres` expuesto en `localhost:5432`, BD `pos_db` | `http://localhost:8080/api/v1` | `pnpm local` (`:3000`) |
-| **docker** | `docker` | `global_postgres:5432/pos_db` (red `shared-network`) | `http://localhost:8080/api/v1` | contenedor del front |
+| **local** | `local` | PostgreSQL en `localhost:5432`, BD `pos_db` | `http://localhost:8080/api/v1` | `pnpm local` (`:3000`) |
+| **docker** | `docker` | Postgres propio del compose (`pos-db:5432/pos_db`) | `http://localhost:8080/api/v1` | contenedor del front |
 | **dev** | `dev` | Neon, rama `dev` | `https://pos-api-dev-k0y9.onrender.com/api/v1` | https://classora-tpv-dev.vercel.app (rama `dev` del front) |
 | **prod** | `prod` | Neon, rama `prod` | `https://pos-api-prod.onrender.com/api/v1` | https://classora-tpv-prod.vercel.app (rama `main` del front) |
 
 ## 2. Local con Docker
 
-Se reutiliza la infraestructura global del autor (`~/Desktop/shared-network/docker-compose.yml` → `global_postgres` en la red externa `shared-network`):
+El `docker-compose.yml` es **autosuficiente**: quien clone el repo solo necesita Docker.
 
 ```bash
-# 1. Infra compartida (una vez)
-docker compose -f ~/Desktop/shared-network/docker-compose.yml up -d postgres
-docker exec -it global_postgres psql -U user -c "CREATE DATABASE pos_db;"
-
-# 2a. API en la máquina
-./mvnw spring-boot:run                       # perfil local (application-local.properties)
-
-# 2b. o API en contenedor
-docker compose up --build -d                 # perfil docker
+docker compose up --build -d     # API (perfil docker) + PostgreSQL propio
+docker compose down -v           # parar y borrar los datos
 ```
 
-`docker-compose.yml` de este repo (igual que task-manager):
 ```yaml
-name: classora-pos
-networks:
-  shared-network:
-    external: true
 services:
+  pos-db:                        # postgres:15-alpine, crea pos_db; healthcheck pg_isready; volumen pos_db_data
   pos-api:
     build: .
-    container_name: pos_api
-    restart: always
+    depends_on: { pos-db: { condition: service_healthy } }
     environment:
       - SPRING_PROFILES_ACTIVE=docker
-    ports:
-      - "8080:8080"
-    networks:
-      - shared-network
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://pos-db:5432/pos_db
+    ports: ["8080:8080"]
 ```
-El front tiene su propio `docker-compose.yml` en la misma red, así que con ambos levantados el sistema completo corre en local.
+
+- El Postgres **no se publica** en el host: no choca con otro en el 5432.
+- El front tiene su propio compose. No comparten red porque es el navegador quien llama a `localhost:8080`, así que con los dos levantados el sistema completo corre en local.
+- Para el perfil `local` (`./mvnw spring-boot:run`) basta con cualquier PostgreSQL en `localhost:5432` con la BD `pos_db` (`user` / `password`).
 
 `Dockerfile`: multi-stage (Maven 3.9 + Temurin 21 → `eclipse-temurin:21-jre-alpine`), idéntico al de task-manager.
 
