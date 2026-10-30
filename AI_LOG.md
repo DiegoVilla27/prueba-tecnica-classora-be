@@ -426,3 +426,12 @@ Registro del uso de inteligencia artificial en el backend. Complementa la **Part
   - Actualizados `docs/07-despliegue.md` (§1 y §2 con el compose nuevo), `03` y el roadmap.
 - **Decisiones / correcciones humanas:** Lo pidió el autor.
 - **Resultado:** Solo documentación. Se mantiene en el checklist histórico de `07` la línea "Crear BD en `global_postgres`", porque es lo que se hizo en su momento.
+
+### #33 · 2026-10-30 16:40 · Revisión del README
+- **Prompt (resumen):** ¿Están bien explicados en los README los entornos, los scripts y cómo lanzar? Corregir lo que falte.
+- **Qué hizo la IA:**
+  - Contrastó el README con el código.
+  - Añadió `GET /sales` a la tabla de endpoints (son 9).
+  - Actualizó las cifras con los últimos informes de Maven: 110 unit y 22 IT.
+- **Decisiones / correcciones humanas:** El autor pidió revisar y corregir.
+- **Resultado:** Solo documentación. Sin commit.
