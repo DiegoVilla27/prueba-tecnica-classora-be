@@ -104,7 +104,7 @@ src/main/java/com/diegovilla/pos/
 src/main/resources/
 ├── application.properties            # común: context-path, swagger, flyway, duraciones JWT, rate limit, actuator
 ├── application-local.properties      # localhost:5432/pos_db + secretos de desarrollo + cajero demo
-├── application-docker.properties     # global_postgres:5432/pos_db (red shared-network) + ídem
+├── application-docker.properties     # perfil del contenedor (el compose fija la BD pos-db:5432/pos_db) + ídem
 ├── application-dev.properties        # Neon rama dev: valores sensibles como ${VARIABLE} (Render)
 ├── application-prod.properties       # Neon rama prod: ídem
 └── db/migration/
