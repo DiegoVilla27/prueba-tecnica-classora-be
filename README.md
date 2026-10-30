@@ -42,6 +42,7 @@ Una **venta** es el ticket de un cliente. Cada **línea** es un producto distint
 | `GET` | `/users/me` | Cajero autenticado |
 | `GET` | `/products/{code}` ⭐ | Producto por código (404 si no existe) |
 | `POST` | `/sales` | Abre una venta (una abierta por cajero) |
+| `GET` | `/sales?page&size` | Historial del cajero: sus ventas paginadas, de la más reciente a la más antigua |
 | `GET` | `/sales/current` · `/sales/{id}` | Venta abierta del cajero (para recuperar tras recargar) · venta por id |
 | `POST` | `/sales/{id}/lines` | Escanea un producto: crea la línea o suma cantidad |
 | `PATCH` | `/sales/{id}/lines/{lineId}` | Cambia la cantidad de una línea (1–999) |
@@ -98,7 +99,7 @@ src/main/java/com/diegovilla/pos/
 │   ├── auth/            # login, refresh
 │   ├── user/            # cajero, /users/me
 │   ├── product/         # catálogo, GET /products/{code}
-│   └── sale/            # agregado de la venta y sus 8 endpoints
+│   └── sale/            # agregado de la venta y sus 9 endpoints
 │       ├── domain/          model/ · valueobjects/ · exceptions/
 │       ├── application/     commands/ · ports/ · services/
 │       └── infrastructure/  controllers/ · docs/ · dto/ · mappers/ · entity/ · repository/ · adapters/ · exceptions/
@@ -145,8 +146,8 @@ Health: `http://localhost:8080/api/v1/actuator/health`.
 ## 🧪 Calidad y tests
 
 ```bash
-./mvnw test              # 107 tests unitarios (dominio sin mocks; service, controller y adapter con Mockito)
-./mvnw verify            # + 17 tests de integración con Testcontainers, Spotless y JaCoCo (≥ 80 % en domain/application)
+./mvnw test              # 110 tests unitarios (dominio sin mocks; service, controller y adapter con Mockito)
+./mvnw verify            # + 22 tests de integración con Testcontainers, Spotless y JaCoCo (≥ 80 % en domain/application)
 ./mvnw spotless:apply    # formatear (Google Java Format AOSP)
 ```
 
